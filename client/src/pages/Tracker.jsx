@@ -32,7 +32,6 @@ export default function Tracker() {
   }, []);
 
   const handleToggle = useCallback(async (id) => {
-    // Optimistic update
     setBills((prev) =>
       prev.map((b) => (b.id === id ? { ...b, paid: b.paid ? 0 : 1 } : b))
     );
@@ -40,7 +39,6 @@ export default function Tracker() {
       const res = await api.patch(`/bills/${id}/toggle`);
       setBills((prev) => prev.map((b) => (b.id === id ? res.data : b)));
     } catch {
-      // Revert on failure
       setBills((prev) =>
         prev.map((b) => (b.id === id ? { ...b, paid: b.paid ? 0 : 1 } : b))
       );
@@ -53,6 +51,20 @@ export default function Tracker() {
       setBills((prev) => prev.map((b) => (b.id === id ? res.data : b)));
     } catch {
       alert('Failed to save. Please try again.');
+    }
+  }, []);
+
+  const handleAddBill = useCallback(async (name, amount) => {
+    const res = await api.post('/bills', { name, amount });
+    setBills((prev) => [...prev, res.data]);
+  }, []);
+
+  const handleDeleteBill = useCallback(async (id) => {
+    try {
+      await api.delete(`/bills/${id}`);
+      setBills((prev) => prev.filter((b) => b.id !== id));
+    } catch {
+      alert('Failed to delete. Please try again.');
     }
   }, []);
 
@@ -76,7 +88,7 @@ export default function Tracker() {
   };
 
   const unpaidTotal = bills
-    .filter((b) => !b.paid)
+    .filter((b) => !b.paid && !b.skipped)
     .reduce((sum, b) => sum + b.amount, 0);
 
   const depositTotal = deposits.reduce((sum, d) => sum + d.amount, 0);
@@ -117,7 +129,13 @@ export default function Tracker() {
           unpaidTotal={unpaidTotal}
           depositTotal={depositTotal}
         />
-        <BillList bills={bills} onToggle={handleToggle} onUpdate={handleUpdate} />
+        <BillList
+          bills={bills}
+          onToggle={handleToggle}
+          onUpdate={handleUpdate}
+          onDelete={handleDeleteBill}
+          onAdd={handleAddBill}
+        />
         <DepositsPanel
           deposits={deposits}
           onAdd={(d) => setDeposits((prev) => [...prev, d])}

@@ -11,17 +11,20 @@ function formatDueDate(due_day) {
   return `Due ${month} ${due_day}`;
 }
 
-export default function BillItem({ bill, onToggle, onUpdate }) {
+export default function BillItem({ bill, onToggle, onUpdate, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(bill.name);
   const [dueDay, setDueDay] = useState(bill.due_day || '');
   const [autopay, setAutopay] = useState(!!bill.autopay);
+  const [skipped, setSkipped] = useState(!!bill.skipped);
   const [amount, setAmount] = useState(bill.amount);
 
   const handleEditClick = (e) => {
     e.stopPropagation();
-    // Reset form to current bill values each time edit opens
+    setName(bill.name);
     setDueDay(bill.due_day || '');
     setAutopay(!!bill.autopay);
+    setSkipped(!!bill.skipped);
     setAmount(bill.amount);
     setIsEditing(true);
   };
@@ -33,37 +36,57 @@ export default function BillItem({ bill, onToggle, onUpdate }) {
 
   const handleSave = async (e) => {
     e.stopPropagation();
+    if (!name.trim()) return;
     await onUpdate(bill.id, {
+      name: name.trim(),
       due_day: parseInt(dueDay) || null,
       autopay,
+      skipped,
       amount: parseFloat(amount) || 0,
     });
     setIsEditing(false);
   };
 
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Remove "${bill.name}" from this month?`)) return;
+    onDelete(bill.id);
+  };
+
+  const isSkipped = !!bill.skipped;
+
   return (
     <li
-      className={`bill-item${bill.paid ? ' paid' : ''}${isEditing ? ' editing' : ''}`}
-      onClick={() => !isEditing && onToggle(bill.id)}
+      className={`bill-item${bill.paid ? ' paid' : ''}${isSkipped ? ' skipped' : ''}${isEditing ? ' editing' : ''}`}
+      onClick={() => !isEditing && !isSkipped && onToggle(bill.id)}
       role="checkbox"
       aria-checked={!!bill.paid}
       tabIndex={0}
-      onKeyDown={(e) => !isEditing && (e.key === 'Enter' || e.key === ' ') ? onToggle(bill.id) : null}
+      onKeyDown={(e) => !isEditing && !isSkipped && (e.key === 'Enter' || e.key === ' ') ? onToggle(bill.id) : null}
     >
       <div className="bill-check">
-        {bill.paid && (
+        {bill.paid && !isSkipped && (
           <svg viewBox="0 0 12 12" aria-hidden="true">
             <polyline points="1.5,6 4.5,9 10.5,3" />
+          </svg>
+        )}
+        {isSkipped && (
+          <svg viewBox="0 0 12 12" aria-hidden="true" style={{ stroke: 'var(--text-secondary)' }}>
+            <line x1="2" y1="6" x2="10" y2="6" />
           </svg>
         )}
       </div>
       <div className="bill-info">
         <span className="bill-name">{bill.name}</span>
-        {bill.due_day ? (
+        {bill.due_day && !isSkipped ? (
           <span className="bill-due">{formatDueDate(bill.due_day)}</span>
         ) : null}
       </div>
-      {bill.autopay ? <span className="bill-autopay-badge">Autopay</span> : null}
+      {isSkipped ? (
+        <span className="bill-skipped-badge">Skipped</span>
+      ) : bill.autopay ? (
+        <span className="bill-autopay-badge">Autopay</span>
+      ) : null}
       <span className="bill-amount">{fmt(bill.amount)}</span>
       <button
         className="bill-edit-btn"
@@ -84,6 +107,15 @@ export default function BillItem({ bill, onToggle, onUpdate }) {
 
       {isEditing && (
         <div className="bill-edit-strip" onClick={(e) => e.stopPropagation()}>
+          <label className="bill-edit-field bill-edit-field--wide">
+            <span>Name</span>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+            />
+          </label>
           <label className="bill-edit-field">
             <span>Amount</span>
             <input
@@ -107,14 +139,17 @@ export default function BillItem({ bill, onToggle, onUpdate }) {
             />
           </label>
           <label className="bill-edit-autopay">
-            <input
-              type="checkbox"
-              checked={autopay}
-              onChange={(e) => setAutopay(e.target.checked)}
-            />
+            <input type="checkbox" checked={autopay} onChange={(e) => setAutopay(e.target.checked)} />
             Autopay
           </label>
-          <button className="btn btn-primary btn-sm" onClick={handleSave}>Save</button>
+          <label className="bill-edit-autopay">
+            <input type="checkbox" checked={skipped} onChange={(e) => setSkipped(e.target.checked)} />
+            Skip month
+          </label>
+          <div className="bill-edit-actions">
+            <button className="btn btn-primary btn-sm" onClick={handleSave}>Save</button>
+            <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete</button>
+          </div>
         </div>
       )}
     </li>

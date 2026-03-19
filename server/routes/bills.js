@@ -10,10 +10,13 @@ router.get('/', (req, res) => {
 router.patch('/:id', (req, res) => {
   const bill = db.prepare('SELECT * FROM current_bills WHERE id = ?').get(req.params.id);
   if (!bill) return res.status(404).json({ error: 'Not found' });
-  const due_day = req.body.due_day !== undefined ? (req.body.due_day || null) : bill.due_day;
-  const autopay = req.body.autopay !== undefined ? (req.body.autopay ? 1 : 0) : bill.autopay;
-  const amount  = req.body.amount  !== undefined ? (parseFloat(req.body.amount) || 0) : bill.amount;
-  db.prepare('UPDATE current_bills SET due_day = ?, autopay = ?, amount = ? WHERE id = ?').run(due_day, autopay, amount, bill.id);
+  const name    = req.body.name    !== undefined ? req.body.name.trim()                        : bill.name;
+  const due_day = req.body.due_day !== undefined ? (req.body.due_day || null)                  : bill.due_day;
+  const autopay = req.body.autopay !== undefined ? (req.body.autopay ? 1 : 0)                  : bill.autopay;
+  const amount  = req.body.amount  !== undefined ? (parseFloat(req.body.amount) || 0)          : bill.amount;
+  const skipped = req.body.skipped !== undefined ? (req.body.skipped ? 1 : 0)                  : bill.skipped;
+  db.prepare('UPDATE current_bills SET name = ?, due_day = ?, autopay = ?, amount = ?, skipped = ? WHERE id = ?')
+    .run(name, due_day, autopay, amount, skipped, bill.id);
   res.json(db.prepare('SELECT * FROM current_bills WHERE id = ?').get(bill.id));
 });
 
@@ -23,6 +26,22 @@ router.patch('/:id/toggle', (req, res) => {
   const newPaid = bill.paid ? 0 : 1;
   db.prepare('UPDATE current_bills SET paid = ? WHERE id = ?').run(newPaid, bill.id);
   res.json({ ...bill, paid: newPaid });
+});
+
+// Add a one-off bill to the current month
+router.post('/', (req, res) => {
+  const { name, amount } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'name required' });
+  const result = db
+    .prepare('INSERT INTO current_bills (name, amount, paid, autopay, skipped) VALUES (?, ?, 0, 0, 0)')
+    .run(name.trim(), parseFloat(amount) || 0);
+  res.json(db.prepare('SELECT * FROM current_bills WHERE id = ?').get(result.lastInsertRowid));
+});
+
+// Delete a current bill mid-month
+router.delete('/:id', (req, res) => {
+  db.prepare('DELETE FROM current_bills WHERE id = ?').run(req.params.id);
+  res.json({ ok: true });
 });
 
 // Reset: copy template into current_bills and clear deposits

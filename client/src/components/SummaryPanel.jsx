@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api from '../api';
 
 const fmt = (n) =>
@@ -15,18 +15,31 @@ function SummaryField({ label, children }) {
 
 export default function SummaryPanel({ summary, onChange, unpaidTotal, depositTotal }) {
   const saveTimer = useRef(null);
+  const clearTimer = useRef(null);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
 
-  // Debounced auto-save: 600ms after last change
   const handleChange = (field, value) => {
     const updated = { ...summary, [field]: parseFloat(value) || 0 };
     onChange(updated);
+    setSaveStatus('saving');
     clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      api.put('/summary', updated);
+    clearTimeout(clearTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      try {
+        await api.put('/summary', updated);
+        setSaveStatus('saved');
+        clearTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch {
+        setSaveStatus('error');
+        clearTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
+      }
     }, 600);
   };
 
-  useEffect(() => () => clearTimeout(saveTimer.current), []);
+  useEffect(() => () => {
+    clearTimeout(saveTimer.current);
+    clearTimeout(clearTimer.current);
+  }, []);
 
   const incomeRemaining = (summary.paychecks_remaining || 0) * (summary.paycheck_amount || 0);
   const netRemaining =
@@ -44,6 +57,15 @@ export default function SummaryPanel({ summary, onChange, unpaidTotal, depositTo
     <div className="card">
       <div className="card-header">
         <span className="card-title">Financial Summary</span>
+        {saveStatus === 'saving' && (
+          <span className="save-indicator saving">Saving…</span>
+        )}
+        {saveStatus === 'saved' && (
+          <span className="save-indicator saved">Saved ✓</span>
+        )}
+        {saveStatus === 'error' && (
+          <span className="save-indicator error">Save failed</span>
+        )}
       </div>
 
       {/* Net Remaining — prominent at top */}

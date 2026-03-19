@@ -416,8 +416,13 @@ body {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  opacity: 0;
+  opacity: 0.35;
   transition: opacity 0.15s, background 0.15s;
+}
+
+/* Always fully visible on touch devices (no hover state) */
+@media (hover: none) {
+  .bill-edit-btn { opacity: 0.6; }
 }
 
 .bill-item:hover .bill-edit-btn,
@@ -475,6 +480,101 @@ body {
   color: var(--text);
   cursor: pointer;
 }
+
+.bill-edit-field--wide input { width: 100%; min-width: 120px; }
+
+.bill-edit-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: auto;
+  align-self: flex-end;
+}
+
+/* ── Skipped bill ───────────────────────────────────────────── */
+.bill-item.skipped {
+  background: #fafafa;
+  cursor: default;
+}
+
+.bill-item.skipped .bill-check {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.bill-item.skipped .bill-name {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.bill-item.skipped .bill-amount {
+  color: var(--text-secondary);
+}
+
+.bill-skipped-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #fef9c3;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Add bill form (in BillList) ────────────────────────────── */
+.bill-add-form {
+  padding: 0.6rem 1rem;
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border);
+  background: #f8fafc;
+  align-items: center;
+}
+
+.bill-add-name {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 0.875rem;
+  outline: none;
+  background: #fff;
+}
+
+.bill-add-name:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(30,64,175,0.1);
+}
+
+.bill-add-amount {
+  width: 100px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 0.875rem;
+  outline: none;
+  background: #fff;
+}
+
+.bill-add-amount:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(30,64,175,0.1);
+}
+
+/* ── Save indicator ─────────────────────────────────────────── */
+.save-indicator {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.save-indicator.saving { color: var(--text-secondary); }
+.save-indicator.saved  { color: var(--success); }
+.save-indicator.error  { color: var(--danger); }
 
 /* ── Unpaid total ───────────────────────────────────────────── */
 .bills-footer {
