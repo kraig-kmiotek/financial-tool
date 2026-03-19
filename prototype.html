@@ -213,7 +213,7 @@
       <div class="summary-grid">
         <div class="summary-field">
           <span class="summary-label">Bank Balance</span>
-          <input class="summary-input" type="number" value="5800" step="0.01" oninput="recalc();showSaveIndicator()" id="bank" />
+          <input class="summary-input" type="number" value="4200" step="0.01" oninput="recalc();showSaveIndicator()" id="bank" />
         </div>
         <div class="summary-field">
           <span class="summary-label">Paychecks Remaining</span>
@@ -221,7 +221,7 @@
         </div>
         <div class="summary-field">
           <span class="summary-label">Paycheck Amount</span>
-          <input class="summary-input" type="number" value="3200" step="0.01" oninput="recalc();showSaveIndicator()" id="paycheck" />
+          <input class="summary-input" type="number" value="3500" step="0.01" oninput="recalc();showSaveIndicator()" id="paycheck" />
         </div>
         <div class="summary-field">
           <span class="summary-label">Income Remaining</span>
@@ -229,11 +229,11 @@
         </div>
         <div class="summary-field">
           <span class="summary-label">Move to Savings</span>
-          <input class="summary-input" type="number" value="500" step="0.01" oninput="recalc();showSaveIndicator()" id="move-savings" />
+          <input class="summary-input" type="number" value="300" step="0.01" oninput="recalc();showSaveIndicator()" id="move-savings" />
         </div>
         <div class="summary-field">
           <span class="summary-label">Savings Balance</span>
-          <input class="summary-input" type="number" value="12400" step="0.01" oninput="recalc();showSaveIndicator()" id="savings" />
+          <input class="summary-input" type="number" value="8500" step="0.01" oninput="recalc();showSaveIndicator()" id="savings" />
         </div>
         <div class="summary-field">
           <span class="summary-label">Total Savings</span>
@@ -268,17 +268,17 @@
     <div class="card">
       <div class="card-header">
         <span class="card-title">One-Off Items</span>
-        <span style="font-size:0.875rem;font-weight:700;color:var(--success);">+$250.00</span>
+        <span style="font-size:0.875rem;font-weight:700;color:var(--success);">+$200.00</span>
       </div>
       <ul style="list-style:none">
         <li class="deposit-item">
-          <span class="deposit-label">Side job payment</span>
-          <span class="deposit-amount positive">+$350.00</span>
+          <span class="deposit-label">Bonus payment</span>
+          <span class="deposit-amount positive">+$500.00</span>
           <button class="deposit-delete"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg></button>
         </li>
         <li class="deposit-item">
-          <span class="deposit-label">Car repair</span>
-          <span class="deposit-amount negative">-$100.00</span>
+          <span class="deposit-label">Home repair</span>
+          <span class="deposit-amount negative">-$300.00</span>
           <button class="deposit-delete"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg></button>
         </li>
       </ul>
@@ -390,35 +390,13 @@
 
   // ── Data ─────────────────────────────────────────────────────
   let BILLS = [
-    { id:1,  name: 'Mortgage',                   amount: 2185.00, paid: false, autopay: false, due_day: 1,    skipped: false },
-    { id:2,  name: 'Car Note',                   amount: 487.50,  paid: false, autopay: true,  due_day: 15,   skipped: false },
-    { id:3,  name: 'Student Loans',              amount: 312.00,  paid: true,  autopay: true,  due_day: 1,    skipped: false },
-    { id:4,  name: 'Verizon',                    amount: 175.00,  paid: false, autopay: true,  due_day: 10,   skipped: false },
-    { id:5,  name: 'Lawn Care',                  amount: 120.00,  paid: false, autopay: false, due_day: null, skipped: true  },
-    { id:6,  name: 'Tesla FSD',                  amount: 99.00,   paid: true,  autopay: true,  due_day: 12,   skipped: false },
-    { id:7,  name: 'Solar Panel',                amount: 245.00,  paid: false, autopay: true,  due_day: 20,   skipped: false },
-    { id:8,  name: 'Rooms To Go',                amount: 89.00,   paid: true,  autopay: false, due_day: 18,   skipped: false },
-    { id:9,  name: 'Gary Sinise Foundation',     amount: 25.00,   paid: false, autopay: true,  due_day: 5,    skipped: false },
-    { id:10, name: 'Water',                      amount: 65.00,   paid: false, autopay: false, due_day: null, skipped: false },
-    { id:11, name: 'Spectrum',                   amount: 89.99,   paid: false, autopay: true,  due_day: 8,    skipped: false },
-    { id:12, name: 'Vivint Loan',                amount: 148.00,  paid: false, autopay: true,  due_day: 22,   skipped: false },
-    { id:13, name: 'Vivint',                     amount: 39.99,   paid: false, autopay: true,  due_day: 22,   skipped: false },
-    { id:14, name: 'Culligan',                   amount: 42.00,   paid: false, autopay: false, due_day: null, skipped: false },
-    { id:15, name: 'Exterminator/Lawn Care',     amount: 75.00,   paid: false, autopay: false, due_day: null, skipped: false },
-    { id:16, name: 'LinkedIn',                   amount: 39.99,   paid: false, autopay: true,  due_day: 3,    skipped: false },
-    { id:17, name: 'Barkbox',                    amount: 35.00,   paid: true,  autopay: true,  due_day: 14,   skipped: false },
-    { id:18, name: 'Notion',                     amount: 16.00,   paid: false, autopay: true,  due_day: 7,    skipped: false },
-    { id:19, name: 'Teco',                       amount: 180.00,  paid: false, autopay: false, due_day: 25,   skipped: false },
-    { id:20, name: 'ChatGPT',                    amount: 20.00,   paid: false, autopay: true,  due_day: 11,   skipped: false },
-    { id:21, name: 'Audible',                    amount: 14.95,   paid: false, autopay: true,  due_day: 19,   skipped: false },
-    { id:22, name: 'Proton',                     amount: 9.99,    paid: false, autopay: true,  due_day: 17,   skipped: false },
-    { id:23, name: 'Tesla Premium Connectivity', amount: 9.99,    paid: false, autopay: true,  due_day: 12,   skipped: false },
-    { id:24, name: 'TP Link',                    amount: 8.99,    paid: false, autopay: true,  due_day: 6,    skipped: false },
-    { id:25, name: 'Citi CC',                    amount: 350.00,  paid: false, autopay: false, due_day: 28,   skipped: false },
-    { id:26, name: 'Chase CC',                   amount: 425.00,  paid: false, autopay: false, due_day: 21,   skipped: false },
-    { id:27, name: 'Apple Credit Card',          amount: 189.00,  paid: false, autopay: false, due_day: 16,   skipped: false },
+    { id:1, name: 'Mortgage',         amount: 1850.00, paid: false, autopay: false, due_day: 1,  skipped: false },
+    { id:2, name: 'Car Note',         amount: 425.00,  paid: true,  autopay: true,  due_day: 15, skipped: false },
+    { id:3, name: 'Cable & Internet', amount: 120.00,  paid: false, autopay: true,  due_day: 8,  skipped: false },
+    { id:4, name: 'Utilities',        amount: 95.00,   paid: false, autopay: false, due_day: 25, skipped: false },
+    { id:5, name: 'Credit Card',      amount: 350.00,  paid: false, autopay: false, due_day: 28, skipped: false },
   ];
-  let nextId = 28;
+  let nextId = 6;
   let editingId = null;
 
   const TEMPLATE = BILLS.map(b => ({ ...b }));
@@ -581,7 +559,7 @@
     const unpaid  = unpaidOverride !== undefined
       ? unpaidOverride
       : BILLS.filter(b => !b.paid && !b.skipped).reduce((s, b) => s + b.amount, 0);
-    const deposits = 250;
+    const deposits = 200;
     const net     = (bank + income - unpaid + deposits) - moveSav;
     const totSav  = savBal + moveSav;
     document.getElementById('income-display').textContent = fmt(income);
