@@ -59,13 +59,14 @@ financial-tool/
 
 **Single service**: In production, Express serves `client/dist` at `/`. No separate frontend host or reverse proxy needed.
 
-**Auth**: Single password via `APP_PASSWORD` env var. `express-session` cookie is a session cookie (no `maxAge`) so it expires when the browser closes. All `/api` routes except `/api/auth` are protected by `requireAuth` middleware.
+**Auth**: Passkey (WebAuthn / Face ID / Touch ID) via `@simplewebauthn/server` + `@simplewebauthn/browser`. `APP_PASSWORD` is still required to *register* new passkeys (acts as an admin gate), but day-to-day login uses a passkey only. Session cookie expires when the browser closes. All `/api` routes except `/api/auth` are protected by `requireAuth` middleware.
 
 **SQLite schema**:
-- `template_bills` — canonical bill list (name, amount, sort_order)
-- `current_bills` — active month's bills (name, amount, paid bool, FK to template)
+- `template_bills` — canonical bill list (name, amount, autopay, due_day, sort_order)
+- `current_bills` — active month's bills (name, amount, paid, autopay, due_day, skipped, FK to template)
 - `summary` — single row (id=1) for all financial inputs
 - `deposits` — one-off items (label, amount; can be negative)
+- `passkeys` — registered WebAuthn credentials (credential_id, public_key, counter, device_name)
 
 **Net Remaining formula**:
 ```
@@ -86,8 +87,10 @@ total_savings    = savings_balance + move_to_savings
 
 | Variable | Description |
 |---|---|
-| `APP_PASSWORD` | Required. Plain-text app password. |
+| `APP_PASSWORD` | Required. Used to gate passkey registration (not used for login). |
 | `SESSION_SECRET` | Required. Secret for `express-session` cookie signing. |
+| `RP_ID` | Required in production. WebAuthn Relying Party ID — just the domain, e.g. `myapp.up.railway.app`. Defaults to `localhost` in dev. |
+| `RP_ORIGIN` | Required in production. Full origin URL(s), comma-separated if multiple, e.g. `https://myapp.up.railway.app`. Defaults to `http://localhost:5173,http://localhost:3001` in dev. |
 | `DATABASE_PATH` | Optional. Defaults to `./data/bills.db`. |
 | `PORT` | Optional. Defaults to `3001`. Railway sets this automatically. |
 | `NODE_ENV` | Set to `production` on Railway to enable static file serving. |

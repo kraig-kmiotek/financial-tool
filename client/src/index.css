@@ -70,6 +70,107 @@ body {
   gap: 1.25rem;
 }
 
+.passkey-btn {
+  gap: 0.5rem;
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.login-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.login-setup-hint {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.login-secondary-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  padding: 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.login-secondary-link:hover { opacity: 0.75; }
+
+/* ── Passkey management in Settings ────────────────────────── */
+.passkey-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.75rem;
+}
+
+.passkey-item:last-of-type { border-bottom: none; }
+
+.passkey-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.passkey-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.passkey-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.passkey-add-form {
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-top: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.passkey-add-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.passkey-add-form input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 0.875rem;
+  outline: none;
+  background: #fff;
+}
+
+.passkey-add-form input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(30,64,175,0.1);
+}
+
+.passkey-msg {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.passkey-msg.error { color: var(--danger); }
+.passkey-msg.success { color: var(--success); }
+
 .login-card h1 {
   font-size: 1.5rem;
   font-weight: 700;

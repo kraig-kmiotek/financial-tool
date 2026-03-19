@@ -26,6 +26,7 @@ app.use(
 );
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth/passkey', require('./routes/passkeys'));
 
 const requireAuth = require('./middleware/requireAuth');
 app.use('/api/bills', requireAuth, require('./routes/bills'));

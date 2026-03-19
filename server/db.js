@@ -72,6 +72,15 @@ function initDb() {
       label TEXT NOT NULL,
       amount REAL NOT NULL DEFAULT 0
     );
+
+    CREATE TABLE IF NOT EXISTS passkeys (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      credential_id TEXT NOT NULL UNIQUE,
+      public_key TEXT NOT NULL,
+      counter INTEGER NOT NULL DEFAULT 0,
+      device_name TEXT NOT NULL DEFAULT 'Unknown device',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   // Migrate: add autopay and due_day columns if they don't exist yet

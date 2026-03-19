@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { startRegistration } from '@simplewebauthn/browser';
 import {
   DndContext,
   closestCenter,
@@ -134,6 +135,116 @@ function EditRow({ bill, onSave, onCancel }) {
       <button type="submit" className="btn btn-primary btn-sm">Save</button>
       <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel}>Cancel</button>
     </form>
+  );
+}
+
+// ── Passkey management panel ────────────────────────────────────
+function PasskeyPanel() {
+  const [passkeys, setPasskeys] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [registering, setRegistering] = useState(false);
+  const [password, setPassword] = useState('');
+  const [deviceName, setDeviceName] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const loadPasskeys = useCallback(() => {
+    api.get('/auth/passkey').then((r) => setPasskeys(r.data)).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { loadPasskeys(); }, [loadPasskeys]);
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!password) { setError('Password required'); return; }
+    setError(''); setSuccess('');
+    setRegistering(true);
+    try {
+      const optRes = await api.post('/auth/passkey/register/options', { password });
+      const credential = await startRegistration({ optionsJSON: optRes.data });
+      await api.post('/auth/passkey/register/verify', {
+        credential,
+        deviceName: deviceName.trim() || 'My device',
+      });
+      setSuccess('Passkey registered!');
+      setPassword(''); setDeviceName('');
+      loadPasskeys();
+    } catch (err) {
+      setError(err?.response?.data?.error || 'Registration failed.');
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Remove passkey "${name}"? Make sure you have another device registered first.`)) return;
+    try {
+      await api.delete(`/auth/passkey/${id}`);
+      setPasskeys((prev) => prev.filter((p) => p.id !== id));
+    } catch (err) {
+      alert(err?.response?.data?.error || 'Failed to delete.');
+    }
+  };
+
+  const fmtDate = (s) => new Date(s + 'Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <span className="card-title">Security — Passkeys</span>
+      </div>
+
+      {loading ? (
+        <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Loading…</div>
+      ) : (
+        <>
+          {passkeys.length === 0 && (
+            <div className="empty-state">No passkeys registered yet.</div>
+          )}
+          {passkeys.map((p) => (
+            <div key={p.id} className="passkey-item">
+              <div className="passkey-info">
+                <span className="passkey-name">{p.device_name}</span>
+                <span className="passkey-date">Added {fmtDate(p.created_at)}</span>
+              </div>
+              <button
+                className="btn btn-ghost btn-sm btn-icon"
+                onClick={() => handleDelete(p.id, p.device_name)}
+                title="Remove passkey"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <polyline points="2,3.5 12,3.5" />
+                  <path d="M4.5 3.5V2.5C4.5 2 4.9 1.5 5.5 1.5H8.5C9.1 1.5 9.5 2 9.5 2.5V3.5" />
+                  <path d="M3.5 3.5L4 12H10L10.5 3.5" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </>
+      )}
+
+      <form className="passkey-add-form" onSubmit={handleRegister}>
+        <p className="passkey-add-label">Register a new device</p>
+        <input
+          placeholder="Device name (e.g. iPhone 15)"
+          value={deviceName}
+          onChange={(e) => setDeviceName(e.target.value)}
+          autoComplete="off"
+        />
+        <input
+          type="password"
+          placeholder="App password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+        />
+        {error && <p className="passkey-msg error">{error}</p>}
+        {success && <p className="passkey-msg success">{success}</p>}
+        <button type="submit" className="btn btn-primary btn-sm" disabled={registering}>
+          {registering ? 'Setting up…' : 'Register Passkey'}
+        </button>
+      </form>
+    </div>
   );
 }
 
@@ -332,6 +443,8 @@ export default function Settings() {
         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
           Changes here affect future resets. Current month bills are unaffected until next reset.
         </p>
+
+        <PasskeyPanel />
       </div>
     </div>
   );
