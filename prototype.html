@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bill Tracker — Prototype</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --primary: #1e40af;
+      --danger: #dc2626;
+      --success: #15803d;
+      --text: #111827;
+      --text-secondary: #6b7280;
+      --paid-bg: #f0fdf4;
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-md);
+    }
+    .app-header h1 { font-size: 1.1rem; font-weight: 700; }
+    .header-actions { display: flex; gap: 0.5rem; }
+    .header-btn {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .header-btn.danger { background: rgba(220,38,38,0.75); }
+
+    /* ── Page ── */
+    .page {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* ── Card ── */
+    .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+
+    /* ── Summary ── */
+    .summary-net {
+      grid-column: 1 / -1;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .net-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+    .net-value { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; }
+    .net-value.positive { color: var(--success); }
+    .net-value.negative { color: var(--danger); }
+
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; }
+    .summary-field {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .summary-field:nth-child(odd) { border-right: 1px solid var(--border); }
+    .summary-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+    .summary-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      background: transparent;
+      padding: 0;
+      -moz-appearance: textfield;
+    }
+    .summary-input::-webkit-outer-spin-button,
+    .summary-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .summary-value { font-size: 1rem; font-weight: 700; }
+    .summary-value.positive { color: var(--success); }
+    .summary-value.negative { color: var(--danger); }
+
+    /* ── Bills ── */
+    .bills-list { list-style: none; }
+    .bill-item {
+      display: flex;
+      align-items: center;
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      gap: 0.75rem;
+      user-select: none;
+      transition: background 0.1s;
+    }
+    .bill-item:last-child { border-bottom: none; }
+    .bill-item:hover { background: #f8fafc; }
+    .bill-item.paid { background: var(--paid-bg); }
+
+    .bill-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      transition: all 0.15s;
+    }
+    .bill-item.paid .bill-check { background: var(--success); border-color: var(--success); color: #fff; }
+    .bill-check svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.5; fill: none; }
+
+    .bill-name { flex: 1; font-size: 0.9375rem; font-weight: 500; }
+    .bill-item.paid .bill-name { text-decoration: line-through; color: var(--text-secondary); }
+    .bill-amount { font-size: 0.9375rem; font-weight: 600; white-space: nowrap; }
+    .bill-item.paid .bill-amount { color: var(--text-secondary); }
+
+    .bills-footer {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+    }
+    .bills-footer-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .bills-footer-amount { font-size: 1rem; font-weight: 700; color: var(--danger); }
+
+    /* ── Deposits ── */
+    .deposit-item {
+      display: flex;
+      align-items: center;
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--border);
+      gap: 0.75rem;
+    }
+    .deposit-label { flex: 1; font-size: 0.9rem; }
+    .deposit-amount { font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+    .deposit-amount.positive { color: var(--success); }
+    .deposit-amount.negative { color: var(--danger); }
+    .deposit-delete {
+      background: none; border: none; color: var(--text-secondary);
+      cursor: pointer; padding: 0.25rem; border-radius: 4px;
+      display: flex; align-items: center;
+    }
+    .deposit-delete:hover { color: var(--danger); background: #fef2f2; }
+
+    .deposit-add-form {
+      padding: 0.75rem 1rem;
+      display: flex;
+      gap: 0.5rem;
+      border-top: 1px solid var(--border);
+      background: #f8fafc;
+    }
+    .deposit-add-form input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.875rem;
+      outline: none;
+      background: #fff;
+    }
+    .deposit-add-form input.amount { max-width: 110px; flex: none; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0.9rem;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+
+    /* ── Prototype banner ── */
+    .proto-banner {
+      background: #fef9c3;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      color: #92400e;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    /* ── Tab switcher (for prototype) ── */
+    .proto-tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem 0;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .proto-tab {
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text-secondary);
+    }
+    .proto-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* ── Settings ── */
+    .template-item {
+      display: flex;
+      align-items: center;
+      padding: 0.7rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      gap: 0.5rem;
+      background: #fff;
+    }
+    .template-item:last-child { border-bottom: none; }
+    .drag-handle { cursor: grab; color: var(--text-secondary); padding: 0.25rem; display: flex; align-items: center; }
+    .template-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
+    .template-amount { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; margin-right: 0.5rem; }
+    .icon-btn {
+      background: none; border: none; color: var(--text-secondary);
+      cursor: pointer; padding: 0.3rem; border-radius: 5px; display: flex; align-items: center;
+    }
+    .icon-btn:hover { background: #f1f5f9; color: var(--text); }
+
+    .template-add-form {
+      padding: 0.75rem 1rem;
+      display: flex;
+      gap: 0.5rem;
+      border-top: 1px solid var(--border);
+      background: #f8fafc;
+    }
+    .template-add-form input {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.875rem;
+      outline: none;
+      background: #fff;
+    }
+    .template-add-form input.name { flex: 1; }
+    .template-add-form input.amount { width: 110px; }
+
+    .hidden { display: none; }
+
+    /* ── Login ── */
+    .login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: var(--bg); padding: 1rem;
+    }
+    .login-card {
+      background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-md);
+      padding: 2.5rem 2rem; width: 100%; max-width: 360px;
+      display: flex; flex-direction: column; gap: 1.25rem;
+    }
+    .login-card h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-align: center; }
+    .login-card input {
+      width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 1rem; outline: none;
+    }
+    .login-card input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,64,175,0.12); }
+    .login-card .btn { width: 100%; padding: 0.75rem; font-size: 1rem; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PROTOTYPE TABS
+════════════════════════════════════════════════════════════════ -->
+<div style="background: var(--primary); padding-bottom: 0;">
+  <div style="max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;">
+    <strong style="color:#fff;font-size:1.1rem;">Bill Tracker</strong>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="header-btn" onclick="show('tracker')">Tracker</button>
+      <button class="header-btn" onclick="show('settings')">Template</button>
+      <button class="header-btn" onclick="show('login')">Login</button>
+      <button class="header-btn danger">Reset Month</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TRACKER VIEW
+════════════════════════════════════════════════════════════════ -->
+<div id="view-tracker">
+  <div class="page">
+
+    <div class="proto-banner">
+      Prototype — click bills to toggle paid/unpaid &nbsp;·&nbsp; numbers are editable
+    </div>
+
+    <!-- Summary Panel -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Financial Summary</span>
+      </div>
+      <div class="summary-net">
+        <span class="net-label">Net Remaining</span>
+        <span class="net-value positive" id="net-display">$1,243.50</span>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-field">
+          <span class="summary-label">Bank Balance</span>
+          <input class="summary-input" type="number" value="5800" step="0.01" oninput="recalc()" id="bank" />
+        </div>
+        <div class="summary-field">
+          <span class="summary-label">Paychecks Remaining</span>
+          <input class="summary-input" type="number" value="1" step="1" min="0" oninput="recalc()" id="checks" />
+        </div>
+        <div class="summary-field">
+          <span class="summary-label">Paycheck Amount</span>
+          <input class="summary-input" type="number" value="3200" step="0.01" oninput="recalc()" id="paycheck" />
+        </div>
+        <div class="summary-field">
+          <span class="summary-label">Income Remaining</span>
+          <span class="summary-value positive" id="income-display">$3,200.00</span>
+        </div>
+        <div class="summary-field">
+          <span class="summary-label">Move to Savings</span>
+          <input class="summary-input" type="number" value="500" step="0.01" oninput="recalc()" id="move-savings" />
+        </div>
+        <div class="summary-field">
+          <span class="summary-label">Savings Balance</span>
+          <input class="summary-input" type="number" value="12400" step="0.01" oninput="recalc()" id="savings" />
+        </div>
+        <div class="summary-field">
+          <span class="summary-label">Total Savings</span>
+          <span class="summary-value positive" id="total-savings-display">$12,900.00</span>
+        </div>
+        <div class="summary-field">
+          <span class="summary-label">Unpaid Bills</span>
+          <span class="summary-value negative" id="unpaid-display">$7,256.50</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bill List -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Bills</span>
+        <span id="paid-count" style="font-size:0.8rem;color:var(--text-secondary);">4/27 paid</span>
+      </div>
+      <ul class="bills-list" id="bill-list"></ul>
+      <div class="bills-footer">
+        <span class="bills-footer-label">Unpaid Total</span>
+        <span class="bills-footer-amount" id="footer-unpaid">$7,256.50</span>
+      </div>
+    </div>
+
+    <!-- One-Off Items -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">One-Off Items</span>
+        <span style="font-size:0.875rem;font-weight:700;color:var(--success);">+$250.00</span>
+      </div>
+      <ul style="list-style:none">
+        <li class="deposit-item">
+          <span class="deposit-label">Side job payment</span>
+          <span class="deposit-amount positive">+$350.00</span>
+          <button class="deposit-delete">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+          </button>
+        </li>
+        <li class="deposit-item">
+          <span class="deposit-label">Car repair</span>
+          <span class="deposit-amount negative">-$100.00</span>
+          <button class="deposit-delete">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+          </button>
+        </li>
+      </ul>
+      <form class="deposit-add-form" onsubmit="return false">
+        <input placeholder="Description" style="flex:1;min-width:0" />
+        <input class="amount" type="number" placeholder="Amount" step="0.01" />
+        <button type="submit" class="btn btn-primary btn-sm">Add</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SETTINGS VIEW
+════════════════════════════════════════════════════════════════ -->
+<div id="view-settings" class="hidden">
+  <div class="page">
+    <div class="proto-banner">Template — drag to reorder · click ✏ to edit · changes apply on next Reset Month</div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Template Bills</span>
+        <span style="font-size:0.8rem;color:var(--text-secondary);">27 bills</span>
+      </div>
+
+      <div id="template-list"></div>
+
+      <form class="template-add-form" onsubmit="return false">
+        <input class="name" placeholder="Bill name" />
+        <input class="amount" type="number" step="0.01" placeholder="Amount" />
+        <button type="submit" class="btn btn-primary btn-sm">Add Bill</button>
+      </form>
+    </div>
+    <p style="font-size:0.8rem;color:var(--text-secondary);text-align:center;">
+      Changes here affect future resets. Current month bills are unaffected until next reset.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     LOGIN VIEW
+════════════════════════════════════════════════════════════════ -->
+<div id="view-login" class="hidden">
+  <div class="login-screen">
+    <form class="login-card" onsubmit="return false">
+      <h1>Bill Tracker</h1>
+      <input type="password" placeholder="Password" />
+      <button type="submit" class="btn btn-primary">Enter</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ── Data ─────────────────────────────────────────────────────
+  const BILLS = [
+    { name: 'Mortgage',                   amount: 2185.00, paid: false },
+    { name: 'Car Note',                   amount: 487.50,  paid: false },
+    { name: 'Student Loans',              amount: 312.00,  paid: true  },
+    { name: 'Verizon',                    amount: 175.00,  paid: false },
+    { name: 'Lawn Care',                  amount: 120.00,  paid: false },
+    { name: 'Tesla FSD',                  amount: 99.00,   paid: true  },
+    { name: 'Solar Panel',                amount: 245.00,  paid: false },
+    { name: 'Rooms To Go',                amount: 89.00,   paid: true  },
+    { name: 'Gary Sinise Foundation',     amount: 25.00,   paid: false },
+    { name: 'Water',                      amount: 65.00,   paid: false },
+    { name: 'Spectrum',                   amount: 89.99,   paid: false },
+    { name: 'Vivint Loan',                amount: 148.00,  paid: false },
+    { name: 'Vivint',                     amount: 39.99,   paid: false },
+    { name: 'Culligan',                   amount: 42.00,   paid: false },
+    { name: 'Exterminator/Lawn Care',     amount: 75.00,   paid: false },
+    { name: 'LinkedIn',                   amount: 39.99,   paid: false },
+    { name: 'Barkbox',                    amount: 35.00,   paid: true  },
+    { name: 'Notion',                     amount: 16.00,   paid: false },
+    { name: 'Teco',                       amount: 180.00,  paid: false },
+    { name: 'ChatGPT',                    amount: 20.00,   paid: false },
+    { name: 'Audible',                    amount: 14.95,   paid: false },
+    { name: 'Proton',                     amount: 9.99,    paid: false },
+    { name: 'Tesla Premium Connectivity', amount: 9.99,    paid: false },
+    { name: 'TP Link',                    amount: 8.99,    paid: false },
+    { name: 'Citi CC',                    amount: 350.00,  paid: false },
+    { name: 'Chase CC',                   amount: 425.00,  paid: false },
+    { name: 'Apple Credit Card',          amount: 189.00,  paid: false },
+  ];
+
+  const TEMPLATE = [...BILLS.map(b => ({ ...b }))];
+
+  const fmt = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  const fmtSigned = (n) => (n >= 0 ? '+' : '') + fmt(n);
+
+  // ── Render bills ─────────────────────────────────────────────
+  function renderBills() {
+    const ul = document.getElementById('bill-list');
+    ul.innerHTML = '';
+    let unpaid = 0, paid = 0;
+    BILLS.forEach((b, i) => {
+      if (!b.paid) unpaid += b.amount;
+      else paid++;
+      const li = document.createElement('li');
+      li.className = 'bill-item' + (b.paid ? ' paid' : '');
+      li.innerHTML = `
+        <div class="bill-check">
+          ${b.paid ? `<svg viewBox="0 0 12 12"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>` : ''}
+        </div>
+        <span class="bill-name">${b.name}</span>
+        <span class="bill-amount">${fmt(b.amount)}</span>`;
+      li.onclick = () => { BILLS[i].paid = !BILLS[i].paid; renderBills(); recalc(); };
+      ul.appendChild(li);
+    });
+    const total = BILLS.length;
+    document.getElementById('paid-count').textContent = `${paid}/${total} paid`;
+    document.getElementById('footer-unpaid').textContent = fmt(unpaid);
+    document.getElementById('unpaid-display').textContent = fmt(unpaid);
+    recalc(unpaid);
+  }
+
+  // ── Recalculate net ──────────────────────────────────────────
+  function recalc(unpaidOverride) {
+    const bank    = parseFloat(document.getElementById('bank').value) || 0;
+    const checks  = parseFloat(document.getElementById('checks').value) || 0;
+    const pay     = parseFloat(document.getElementById('paycheck').value) || 0;
+    const moveSav = parseFloat(document.getElementById('move-savings').value) || 0;
+    const savBal  = parseFloat(document.getElementById('savings').value) || 0;
+
+    const income  = checks * pay;
+    const unpaid  = unpaidOverride !== undefined
+      ? unpaidOverride
+      : BILLS.filter(b => !b.paid).reduce((s, b) => s + b.amount, 0);
+    const deposits = 350 - 100; // hardcoded for prototype
+    const net     = (bank + income - unpaid + deposits) - moveSav;
+    const totSav  = savBal + moveSav;
+
+    document.getElementById('income-display').textContent = fmt(income);
+    document.getElementById('total-savings-display').textContent = fmt(totSav);
+    const netEl = document.getElementById('net-display');
+    netEl.textContent = fmt(net);
+    netEl.className = 'net-value ' + (net >= 0 ? 'positive' : 'negative');
+    document.getElementById('unpaid-display').textContent = fmt(unpaid);
+    document.getElementById('footer-unpaid').textContent = fmt(unpaid);
+  }
+
+  // ── Render template ──────────────────────────────────────────
+  function renderTemplate() {
+    const container = document.getElementById('template-list');
+    container.innerHTML = '';
+    TEMPLATE.forEach((b) => {
+      const row = document.createElement('div');
+      row.className = 'template-item';
+      row.innerHTML = `
+        <span class="drag-handle">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <rect x="3" y="3" width="10" height="2" rx="1"/>
+            <rect x="3" y="7" width="10" height="2" rx="1"/>
+            <rect x="3" y="11" width="10" height="2" rx="1"/>
+          </svg>
+        </span>
+        <span class="template-name">${b.name}</span>
+        <span class="template-amount">${fmt(b.amount)}</span>
+        <button class="icon-btn" title="Edit">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.5 1.5L12.5 4.5L5 12H2V9L9.5 1.5Z"/>
+          </svg>
+        </button>
+        <button class="icon-btn" title="Delete">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <polyline points="2,3.5 12,3.5"/>
+            <path d="M4.5 3.5V2.5C4.5 2 4.9 1.5 5.5 1.5H8.5C9.1 1.5 9.5 2 9.5 2.5V3.5"/>
+            <path d="M3.5 3.5L4 12H10L10.5 3.5"/>
+          </svg>
+        </button>`;
+      container.appendChild(row);
+    });
+  }
+
+  // ── View switching ───────────────────────────────────────────
+  function show(view) {
+    ['tracker', 'settings', 'login'].forEach(v => {
+      document.getElementById('view-' + v).classList.toggle('hidden', v !== view);
+    });
+  }
+
+  // ── Init ─────────────────────────────────────────────────────
+  renderBills();
+  renderTemplate();
+  recalc();
+</script>
+
+</body>
+</html>

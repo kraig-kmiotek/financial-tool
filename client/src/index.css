@@ -1,0 +1,583 @@
+/* ── Variables ──────────────────────────────────────────────── */
+:root {
+  --bg: #f0f2f5;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --primary: #1e40af;
+  --primary-hover: #1d3fa8;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --success: #15803d;
+  --text: #111827;
+  --text-secondary: #6b7280;
+  --paid-bg: #f0fdf4;
+  --paid-text: #15803d;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Loading ────────────────────────────────────────────────── */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Login ──────────────────────────────────────────────────── */
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: var(--bg);
+}
+
+.login-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.login-card h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-align: center;
+}
+
+.login-card input[type="password"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.login-card input[type="password"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(30,64,175,0.12);
+}
+
+.login-error {
+  color: var(--danger);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0.4rem 0.6rem;
+}
+.btn-ghost:hover:not(:disabled) { background: #f1f5f9; color: var(--text); }
+
+.btn-full { width: 100%; }
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+.btn-icon { padding: 0.4rem; min-width: 2rem; }
+
+/* ── App Layout ─────────────────────────────────────────────── */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--primary);
+  color: #fff;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-md);
+}
+
+.app-header h1 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.header-btn {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  touch-action: manipulation;
+}
+
+.header-btn:hover { background: rgba(255,255,255,0.25); }
+.header-btn.danger { background: rgba(220,38,38,0.75); }
+.header-btn.danger:hover { background: rgba(220,38,38,0.9); }
+
+/* ── Page ───────────────────────────────────────────────────── */
+.page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+/* ── Summary Panel ──────────────────────────────────────────── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.summary-field {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.summary-field:nth-child(odd) {
+  border-right: 1px solid var(--border);
+}
+
+.summary-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.summary-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  padding: 0;
+  -moz-appearance: textfield;
+}
+
+.summary-input::-webkit-outer-spin-button,
+.summary-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.summary-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.summary-value.positive { color: var(--success); }
+.summary-value.negative { color: var(--danger); }
+.summary-value.highlight {
+  font-size: 1.15rem;
+}
+
+.summary-net {
+  grid-column: 1 / -1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.net-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.net-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.net-value.positive { color: var(--success); }
+.net-value.negative { color: var(--danger); }
+
+/* ── Bill List ──────────────────────────────────────────────── */
+.bills-list {
+  list-style: none;
+}
+
+.bill-item {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+  touch-action: manipulation;
+  user-select: none;
+  gap: 0.75rem;
+}
+
+.bill-item:last-child { border-bottom: none; }
+.bill-item:active { background: #f8fafc; }
+
+.bill-item.paid {
+  background: var(--paid-bg);
+}
+
+.bill-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  background: #fff;
+}
+
+.bill-item.paid .bill-check {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+
+.bill-check svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.bill-name {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.bill-item.paid .bill-name {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.bill-amount {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.bill-item.paid .bill-amount {
+  color: var(--text-secondary);
+}
+
+/* ── Unpaid total ───────────────────────────────────────────── */
+.bills-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.bills-footer-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bills-footer-amount {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+/* ── Deposits Panel ─────────────────────────────────────────── */
+.deposit-item {
+  display: flex;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.75rem;
+}
+
+.deposit-item:last-child { border-bottom: none; }
+
+.deposit-label {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.deposit-amount {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.deposit-amount.positive { color: var(--success); }
+.deposit-amount.negative { color: var(--danger); }
+
+.deposit-delete {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  touch-action: manipulation;
+}
+
+.deposit-delete:hover { color: var(--danger); background: #fef2f2; }
+
+.deposit-add-form {
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border);
+  background: #f8fafc;
+  flex-wrap: wrap;
+}
+
+.deposit-add-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 0.875rem;
+  outline: none;
+  background: #fff;
+}
+
+.deposit-add-form input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(30,64,175,0.1);
+}
+
+.deposit-amount-input {
+  max-width: 110px;
+}
+
+/* ── Settings Page ──────────────────────────────────────────── */
+.settings-page .page {
+  padding-bottom: 2rem;
+}
+
+.template-item {
+  display: flex;
+  align-items: center;
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.5rem;
+  background: #fff;
+}
+
+.template-item:last-child { border-bottom: none; }
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-secondary);
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.drag-handle:active { cursor: grabbing; }
+
+.template-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-amount {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.template-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.template-edit-row {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.5rem;
+  background: #eff6ff;
+}
+
+.template-edit-row input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  outline: none;
+  background: #fff;
+}
+
+.template-edit-row input:focus {
+  border-color: var(--primary);
+}
+
+.template-edit-name { flex: 1; min-width: 0; }
+.template-edit-amount { width: 100px; }
+
+.template-add-form {
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border);
+  background: #f8fafc;
+  flex-wrap: wrap;
+}
+
+.template-add-form input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 0.875rem;
+  outline: none;
+  background: #fff;
+}
+
+.template-add-form input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(30,64,175,0.1);
+}
+
+.template-add-name { flex: 1; min-width: 120px; }
+.template-add-amount { width: 110px; }
+
+/* ── Empty state ────────────────────────────────────────────── */
+.empty-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 400px) {
+  .summary-grid { grid-template-columns: 1fr; }
+  .summary-field:nth-child(odd) { border-right: none; }
+  .net-value { font-size: 1.5rem; }
+  .deposit-add-form { gap: 0.4rem; }
+  .deposit-amount-input { max-width: 90px; }
+}
