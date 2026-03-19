@@ -348,16 +348,49 @@ body {
   fill: none;
 }
 
-.bill-name {
+.bill-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.bill-name {
   font-size: 0.9375rem;
   font-weight: 500;
   transition: all 0.15s;
 }
 
+.bill-due {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
 .bill-item.paid .bill-name {
   text-decoration: line-through;
   color: var(--text-secondary);
+}
+
+.bill-autopay-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #eff6ff;
+  color: var(--primary);
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bill-item.paid .bill-autopay-badge {
+  background: #f0fdf4;
+  color: var(--success);
+  border-color: #bbf7d0;
 }
 
 .bill-amount {
@@ -508,6 +541,47 @@ body {
   white-space: nowrap;
 }
 
+.template-due-day {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 38px;
+  text-align: center;
+}
+
+.template-due-day--empty {
+  opacity: 0.3;
+}
+
+.template-autopay-btn {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: #f1f5f9;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.template-autopay-btn.active {
+  background: #eff6ff;
+  color: var(--primary);
+  border-color: #bfdbfe;
+}
+
+.template-autopay-btn:hover {
+  background: #e2e8f0;
+}
+
+.template-autopay-btn.active:hover {
+  background: #dbeafe;
+}
+
 .template-actions {
   display: flex;
   gap: 0.25rem;
@@ -521,9 +595,11 @@ body {
   border-bottom: 1px solid var(--border);
   gap: 0.5rem;
   background: #eff6ff;
+  flex-wrap: wrap;
 }
 
-.template-edit-row input {
+.template-edit-row input[type="text"],
+.template-edit-row input[type="number"] {
   padding: 0.4rem 0.6rem;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -538,6 +614,18 @@ body {
 
 .template-edit-name { flex: 1; min-width: 0; }
 .template-edit-amount { width: 100px; }
+.template-edit-due-day { width: 68px; }
+
+.template-edit-autopay {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
 
 .template-add-form {
   padding: 0.75rem 1rem;
@@ -546,9 +634,11 @@ body {
   border-top: 1px solid var(--border);
   background: #f8fafc;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.template-add-form input {
+.template-add-form input[type="text"],
+.template-add-form input[type="number"] {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 7px;
@@ -564,6 +654,18 @@ body {
 
 .template-add-name { flex: 1; min-width: 120px; }
 .template-add-amount { width: 110px; }
+.template-add-due-day { width: 84px; }
+
+.template-add-autopay {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
 
 /* ── Empty state ────────────────────────────────────────────── */
 .empty-state {

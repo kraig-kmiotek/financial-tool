@@ -18,24 +18,34 @@ router.put('/reorder', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { name, amount } = req.body;
+  const { name, amount, autopay, due_day } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
   const max = db.prepare('SELECT MAX(sort_order) as m FROM template_bills').get();
   const result = db
-    .prepare('INSERT INTO template_bills (name, amount, sort_order) VALUES (?, ?, ?)')
-    .run(name.trim(), amount || 0, (max.m ?? -1) + 1);
+    .prepare('INSERT INTO template_bills (name, amount, autopay, due_day, sort_order) VALUES (?, ?, ?, ?, ?)')
+    .run(name.trim(), amount || 0, autopay ? 1 : 0, due_day || null, (max.m ?? -1) + 1);
   res.json(db.prepare('SELECT * FROM template_bills WHERE id = ?').get(result.lastInsertRowid));
 });
 
 router.put('/:id', (req, res) => {
-  const { name, amount } = req.body;
+  const { name, amount, autopay, due_day } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
-  db.prepare('UPDATE template_bills SET name = ?, amount = ? WHERE id = ?').run(
+  db.prepare('UPDATE template_bills SET name = ?, amount = ?, autopay = ?, due_day = ? WHERE id = ?').run(
     name.trim(),
     amount || 0,
+    autopay ? 1 : 0,
+    due_day || null,
     req.params.id
   );
   res.json(db.prepare('SELECT * FROM template_bills WHERE id = ?').get(req.params.id));
+});
+
+// Quick autopay toggle without opening full edit
+router.patch('/:id/autopay', (req, res) => {
+  const bill = db.prepare('SELECT * FROM template_bills WHERE id = ?').get(req.params.id);
+  if (!bill) return res.status(404).json({ error: 'Not found' });
+  db.prepare('UPDATE template_bills SET autopay = ? WHERE id = ?').run(bill.autopay ? 0 : 1, bill.id);
+  res.json(db.prepare('SELECT * FROM template_bills WHERE id = ?').get(bill.id));
 });
 
 router.delete('/:id', (req, res) => {

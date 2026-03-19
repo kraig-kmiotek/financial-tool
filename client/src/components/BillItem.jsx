@@ -3,6 +3,14 @@ import React from 'react';
 const fmt = (n) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function formatDueDate(due_day) {
+  if (!due_day) return null;
+  const month = MONTHS[new Date().getMonth()];
+  return `Due ${month} ${due_day}`;
+}
+
 export default function BillItem({ bill, onToggle }) {
   return (
     <li
@@ -20,7 +28,13 @@ export default function BillItem({ bill, onToggle }) {
           </svg>
         )}
       </div>
-      <span className="bill-name">{bill.name}</span>
+      <div className="bill-info">
+        <span className="bill-name">{bill.name}</span>
+        {bill.due_day ? (
+          <span className="bill-due">{formatDueDate(bill.due_day)}</span>
+        ) : null}
+      </div>
+      {bill.autopay ? <span className="bill-autopay-badge">Autopay</span> : null}
       <span className="bill-amount">{fmt(bill.amount)}</span>
     </li>
   );

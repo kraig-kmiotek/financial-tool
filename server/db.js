@@ -74,6 +74,12 @@ function initDb() {
     );
   `);
 
+  // Migrate: add autopay and due_day columns if they don't exist yet
+  try { db.exec('ALTER TABLE template_bills ADD COLUMN autopay INTEGER NOT NULL DEFAULT 0'); } catch {}
+  try { db.exec('ALTER TABLE template_bills ADD COLUMN due_day INTEGER'); } catch {}
+  try { db.exec('ALTER TABLE current_bills ADD COLUMN autopay INTEGER NOT NULL DEFAULT 0'); } catch {}
+  try { db.exec('ALTER TABLE current_bills ADD COLUMN due_day INTEGER'); } catch {}
+
   // Ensure the single summary row exists
   db.prepare('INSERT OR IGNORE INTO summary (id) VALUES (1)').run();
 

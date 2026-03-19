@@ -34,7 +34,7 @@ function DragIcon() {
 }
 
 // ── Sortable bill row ───────────────────────────────────────────
-function SortableBillRow({ bill, onEdit, onDelete }) {
+function SortableBillRow({ bill, onEdit, onDelete, onToggleAutopay }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: bill.id });
 
@@ -53,6 +53,18 @@ function SortableBillRow({ bill, onEdit, onDelete }) {
       </span>
       <span className="template-name">{bill.name}</span>
       <span className="template-amount">{fmt(bill.amount)}</span>
+      {bill.due_day ? (
+        <span className="template-due-day">Due {bill.due_day}</span>
+      ) : (
+        <span className="template-due-day template-due-day--empty">—</span>
+      )}
+      <button
+        className={`template-autopay-btn${bill.autopay ? ' active' : ''}`}
+        onClick={() => onToggleAutopay(bill.id)}
+        title={bill.autopay ? 'Autopay on — click to turn off' : 'Autopay off — click to turn on'}
+      >
+        AP
+      </button>
       <div className="template-actions">
         <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onEdit(bill)} title="Edit">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -75,11 +87,13 @@ function SortableBillRow({ bill, onEdit, onDelete }) {
 function EditRow({ bill, onSave, onCancel }) {
   const [name, setName] = useState(bill.name);
   const [amount, setAmount] = useState(bill.amount);
+  const [autopay, setAutopay] = useState(!!bill.autopay);
+  const [dueDay, setDueDay] = useState(bill.due_day || '');
 
   const save = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    onSave(bill.id, name.trim(), parseFloat(amount) || 0);
+    onSave(bill.id, name.trim(), parseFloat(amount) || 0, autopay, parseInt(dueDay) || null);
   };
 
   return (
@@ -98,6 +112,25 @@ function EditRow({ bill, onSave, onCancel }) {
         onChange={(e) => setAmount(e.target.value)}
         inputMode="decimal"
       />
+      <input
+        className="template-edit-due-day"
+        type="number"
+        min="1"
+        max="31"
+        placeholder="Day"
+        value={dueDay}
+        onChange={(e) => setDueDay(e.target.value)}
+        inputMode="numeric"
+        title="Due day of month (1–31)"
+      />
+      <label className="template-edit-autopay">
+        <input
+          type="checkbox"
+          checked={autopay}
+          onChange={(e) => setAutopay(e.target.checked)}
+        />
+        Autopay
+      </label>
       <button type="submit" className="btn btn-primary btn-sm">Save</button>
       <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel}>Cancel</button>
     </form>
@@ -112,6 +145,8 @@ export default function Settings() {
   const [editingId, setEditingId] = useState(null);
   const [newName, setNewName] = useState('');
   const [newAmount, setNewAmount] = useState('');
+  const [newDueDay, setNewDueDay] = useState('');
+  const [newAutopay, setNewAutopay] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -138,18 +173,26 @@ export default function Settings() {
     try {
       await api.put('/template/reorder', { order: reordered.map((b) => b.id) });
     } catch {
-      // Revert on failure
       setBills(bills);
     }
   };
 
-  const handleSaveEdit = async (id, name, amount) => {
+  const handleSaveEdit = async (id, name, amount, autopay, due_day) => {
     try {
-      const res = await api.put(`/template/${id}`, { name, amount });
+      const res = await api.put(`/template/${id}`, { name, amount, autopay, due_day });
       setBills((prev) => prev.map((b) => (b.id === id ? res.data : b)));
       setEditingId(null);
     } catch {
       alert('Failed to save. Please try again.');
+    }
+  };
+
+  const handleToggleAutopay = async (id) => {
+    try {
+      const res = await api.patch(`/template/${id}/autopay`);
+      setBills((prev) => prev.map((b) => (b.id === id ? res.data : b)));
+    } catch {
+      alert('Failed to update autopay. Please try again.');
     }
   };
 
@@ -170,10 +213,14 @@ export default function Settings() {
       const res = await api.post('/template', {
         name: newName.trim(),
         amount: parseFloat(newAmount) || 0,
+        autopay: newAutopay,
+        due_day: parseInt(newDueDay) || null,
       });
       setBills((prev) => [...prev, res.data]);
       setNewName('');
       setNewAmount('');
+      setNewDueDay('');
+      setNewAutopay(false);
     } catch {
       alert('Failed to add bill. Please try again.');
     }
@@ -230,6 +277,7 @@ export default function Settings() {
                     bill={bill}
                     onEdit={(b) => setEditingId(b.id)}
                     onDelete={handleDelete}
+                    onToggleAutopay={handleToggleAutopay}
                   />
                 )
               )}
@@ -256,6 +304,25 @@ export default function Settings() {
               onChange={(e) => setNewAmount(e.target.value)}
               inputMode="decimal"
             />
+            <input
+              className="template-add-due-day"
+              type="number"
+              min="1"
+              max="31"
+              placeholder="Due day"
+              value={newDueDay}
+              onChange={(e) => setNewDueDay(e.target.value)}
+              inputMode="numeric"
+              title="Due day of month (1–31)"
+            />
+            <label className="template-add-autopay">
+              <input
+                type="checkbox"
+                checked={newAutopay}
+                onChange={(e) => setNewAutopay(e.target.checked)}
+              />
+              Autopay
+            </label>
             <button type="submit" className="btn btn-primary btn-sm">
               Add Bill
             </button>

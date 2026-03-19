@@ -168,8 +168,36 @@
     .bill-item.paid .bill-check { background: var(--success); border-color: var(--success); color: #fff; }
     .bill-check svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.5; fill: none; }
 
-    .bill-name { flex: 1; font-size: 0.9375rem; font-weight: 500; }
+    .bill-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      min-width: 0;
+    }
+    .bill-name { font-size: 0.9375rem; font-weight: 500; }
+    .bill-due { font-size: 0.72rem; color: var(--text-secondary); font-weight: 500; }
     .bill-item.paid .bill-name { text-decoration: line-through; color: var(--text-secondary); }
+
+    .bill-autopay-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .bill-item.paid .bill-autopay-badge {
+      background: #f0fdf4;
+      color: var(--success);
+      border-color: #bbf7d0;
+    }
+
     .bill-amount { font-size: 0.9375rem; font-weight: 600; white-space: nowrap; }
     .bill-item.paid .bill-amount { color: var(--text-secondary); }
 
@@ -250,26 +278,6 @@
       font-weight: 500;
     }
 
-    /* ── Tab switcher (for prototype) ── */
-    .proto-tabs {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem 0;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .proto-tab {
-      padding: 0.4rem 0.9rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text-secondary);
-    }
-    .proto-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-
     /* ── Settings ── */
     .template-item {
       display: flex;
@@ -280,12 +288,45 @@
       background: #fff;
     }
     .template-item:last-child { border-bottom: none; }
-    .drag-handle { cursor: grab; color: var(--text-secondary); padding: 0.25rem; display: flex; align-items: center; }
-    .template-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
-    .template-amount { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; margin-right: 0.5rem; }
+    .drag-handle { cursor: grab; color: var(--text-secondary); padding: 0.25rem; display: flex; align-items: center; flex-shrink: 0; }
+    .template-name { flex: 1; font-size: 0.9rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .template-amount { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+
+    .template-due-day {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      min-width: 38px;
+      text-align: center;
+    }
+    .template-due-day--empty { opacity: 0.3; }
+
+    .template-autopay-btn {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 0.2rem 0.45rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #f1f5f9;
+      color: var(--text-secondary);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .template-autopay-btn.active {
+      background: #eff6ff;
+      color: var(--primary);
+      border-color: #bfdbfe;
+    }
+    .template-autopay-btn:hover { background: #e2e8f0; }
+    .template-autopay-btn.active:hover { background: #dbeafe; }
+
     .icon-btn {
       background: none; border: none; color: var(--text-secondary);
       cursor: pointer; padding: 0.3rem; border-radius: 5px; display: flex; align-items: center;
+      flex-shrink: 0;
     }
     .icon-btn:hover { background: #f1f5f9; color: var(--text); }
 
@@ -295,6 +336,8 @@
       gap: 0.5rem;
       border-top: 1px solid var(--border);
       background: #f8fafc;
+      flex-wrap: wrap;
+      align-items: center;
     }
     .template-add-form input {
       padding: 0.5rem 0.75rem;
@@ -304,8 +347,19 @@
       outline: none;
       background: #fff;
     }
-    .template-add-form input.name { flex: 1; }
+    .template-add-form input.name { flex: 1; min-width: 120px; }
     .template-add-form input.amount { width: 110px; }
+    .template-add-form input.due-day { width: 84px; }
+    .template-add-autopay {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+    }
 
     .hidden { display: none; }
 
@@ -450,7 +504,7 @@
 ════════════════════════════════════════════════════════════════ -->
 <div id="view-settings" class="hidden">
   <div class="page">
-    <div class="proto-banner">Template — drag to reorder · click ✏ to edit · changes apply on next Reset Month</div>
+    <div class="proto-banner">Template — drag to reorder · click ✏ to edit · click AP to toggle autopay · changes apply on next Reset Month</div>
     <div class="card">
       <div class="card-header">
         <span class="card-title">Template Bills</span>
@@ -462,6 +516,10 @@
       <form class="template-add-form" onsubmit="return false">
         <input class="name" placeholder="Bill name" />
         <input class="amount" type="number" step="0.01" placeholder="Amount" />
+        <input class="due-day" type="number" min="1" max="31" placeholder="Due day" />
+        <label class="template-add-autopay">
+          <input type="checkbox" /> Autopay
+        </label>
         <button type="submit" class="btn btn-primary btn-sm">Add Bill</button>
       </form>
     </div>
@@ -487,61 +545,72 @@
 <script>
   // ── Data ─────────────────────────────────────────────────────
   const BILLS = [
-    { name: 'Mortgage',                   amount: 2185.00, paid: false },
-    { name: 'Car Note',                   amount: 487.50,  paid: false },
-    { name: 'Student Loans',              amount: 312.00,  paid: true  },
-    { name: 'Verizon',                    amount: 175.00,  paid: false },
-    { name: 'Lawn Care',                  amount: 120.00,  paid: false },
-    { name: 'Tesla FSD',                  amount: 99.00,   paid: true  },
-    { name: 'Solar Panel',                amount: 245.00,  paid: false },
-    { name: 'Rooms To Go',                amount: 89.00,   paid: true  },
-    { name: 'Gary Sinise Foundation',     amount: 25.00,   paid: false },
-    { name: 'Water',                      amount: 65.00,   paid: false },
-    { name: 'Spectrum',                   amount: 89.99,   paid: false },
-    { name: 'Vivint Loan',                amount: 148.00,  paid: false },
-    { name: 'Vivint',                     amount: 39.99,   paid: false },
-    { name: 'Culligan',                   amount: 42.00,   paid: false },
-    { name: 'Exterminator/Lawn Care',     amount: 75.00,   paid: false },
-    { name: 'LinkedIn',                   amount: 39.99,   paid: false },
-    { name: 'Barkbox',                    amount: 35.00,   paid: true  },
-    { name: 'Notion',                     amount: 16.00,   paid: false },
-    { name: 'Teco',                       amount: 180.00,  paid: false },
-    { name: 'ChatGPT',                    amount: 20.00,   paid: false },
-    { name: 'Audible',                    amount: 14.95,   paid: false },
-    { name: 'Proton',                     amount: 9.99,    paid: false },
-    { name: 'Tesla Premium Connectivity', amount: 9.99,    paid: false },
-    { name: 'TP Link',                    amount: 8.99,    paid: false },
-    { name: 'Citi CC',                    amount: 350.00,  paid: false },
-    { name: 'Chase CC',                   amount: 425.00,  paid: false },
-    { name: 'Apple Credit Card',          amount: 189.00,  paid: false },
+    { name: 'Mortgage',                   amount: 2185.00, paid: false, autopay: false, due_day: 1  },
+    { name: 'Car Note',                   amount: 487.50,  paid: false, autopay: true,  due_day: 15 },
+    { name: 'Student Loans',              amount: 312.00,  paid: true,  autopay: true,  due_day: 1  },
+    { name: 'Verizon',                    amount: 175.00,  paid: false, autopay: true,  due_day: 10 },
+    { name: 'Lawn Care',                  amount: 120.00,  paid: false, autopay: false, due_day: null },
+    { name: 'Tesla FSD',                  amount: 99.00,   paid: true,  autopay: true,  due_day: 12 },
+    { name: 'Solar Panel',                amount: 245.00,  paid: false, autopay: true,  due_day: 20 },
+    { name: 'Rooms To Go',                amount: 89.00,   paid: true,  autopay: false, due_day: 18 },
+    { name: 'Gary Sinise Foundation',     amount: 25.00,   paid: false, autopay: true,  due_day: 5  },
+    { name: 'Water',                      amount: 65.00,   paid: false, autopay: false, due_day: null },
+    { name: 'Spectrum',                   amount: 89.99,   paid: false, autopay: true,  due_day: 8  },
+    { name: 'Vivint Loan',                amount: 148.00,  paid: false, autopay: true,  due_day: 22 },
+    { name: 'Vivint',                     amount: 39.99,   paid: false, autopay: true,  due_day: 22 },
+    { name: 'Culligan',                   amount: 42.00,   paid: false, autopay: false, due_day: null },
+    { name: 'Exterminator/Lawn Care',     amount: 75.00,   paid: false, autopay: false, due_day: null },
+    { name: 'LinkedIn',                   amount: 39.99,   paid: false, autopay: true,  due_day: 3  },
+    { name: 'Barkbox',                    amount: 35.00,   paid: true,  autopay: true,  due_day: 14 },
+    { name: 'Notion',                     amount: 16.00,   paid: false, autopay: true,  due_day: 7  },
+    { name: 'Teco',                       amount: 180.00,  paid: false, autopay: false, due_day: 25 },
+    { name: 'ChatGPT',                    amount: 20.00,   paid: false, autopay: true,  due_day: 11 },
+    { name: 'Audible',                    amount: 14.95,   paid: false, autopay: true,  due_day: 19 },
+    { name: 'Proton',                     amount: 9.99,    paid: false, autopay: true,  due_day: 17 },
+    { name: 'Tesla Premium Connectivity', amount: 9.99,    paid: false, autopay: true,  due_day: 12 },
+    { name: 'TP Link',                    amount: 8.99,    paid: false, autopay: true,  due_day: 6  },
+    { name: 'Citi CC',                    amount: 350.00,  paid: false, autopay: false, due_day: 28 },
+    { name: 'Chase CC',                   amount: 425.00,  paid: false, autopay: false, due_day: 21 },
+    { name: 'Apple Credit Card',          amount: 189.00,  paid: false, autopay: false, due_day: 16 },
   ];
 
-  const TEMPLATE = [...BILLS.map(b => ({ ...b }))];
+  const TEMPLATE = BILLS.map(b => ({ ...b }));
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const currentMonth = MONTHS[new Date().getMonth()];
 
   const fmt = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-  const fmtSigned = (n) => (n >= 0 ? '+' : '') + fmt(n);
 
   // ── Render bills ─────────────────────────────────────────────
   function renderBills() {
     const ul = document.getElementById('bill-list');
     ul.innerHTML = '';
-    let unpaid = 0, paid = 0;
+    let unpaid = 0, paidCount = 0;
     BILLS.forEach((b, i) => {
       if (!b.paid) unpaid += b.amount;
-      else paid++;
+      else paidCount++;
       const li = document.createElement('li');
       li.className = 'bill-item' + (b.paid ? ' paid' : '');
+      const dueHtml = b.due_day
+        ? `<span class="bill-due">Due ${currentMonth} ${b.due_day}</span>`
+        : '';
+      const apHtml = b.autopay
+        ? `<span class="bill-autopay-badge">Autopay</span>`
+        : '';
       li.innerHTML = `
         <div class="bill-check">
           ${b.paid ? `<svg viewBox="0 0 12 12"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>` : ''}
         </div>
-        <span class="bill-name">${b.name}</span>
+        <div class="bill-info">
+          <span class="bill-name">${b.name}</span>
+          ${dueHtml}
+        </div>
+        ${apHtml}
         <span class="bill-amount">${fmt(b.amount)}</span>`;
       li.onclick = () => { BILLS[i].paid = !BILLS[i].paid; renderBills(); recalc(); };
       ul.appendChild(li);
     });
-    const total = BILLS.length;
-    document.getElementById('paid-count').textContent = `${paid}/${total} paid`;
+    document.getElementById('paid-count').textContent = `${paidCount}/${BILLS.length} paid`;
     document.getElementById('footer-unpaid').textContent = fmt(unpaid);
     document.getElementById('unpaid-display').textContent = fmt(unpaid);
     recalc(unpaid);
@@ -576,9 +645,12 @@
   function renderTemplate() {
     const container = document.getElementById('template-list');
     container.innerHTML = '';
-    TEMPLATE.forEach((b) => {
+    TEMPLATE.forEach((b, i) => {
       const row = document.createElement('div');
       row.className = 'template-item';
+      const dueLabel = b.due_day
+        ? `<span class="template-due-day">Due ${b.due_day}</span>`
+        : `<span class="template-due-day template-due-day--empty">—</span>`;
       row.innerHTML = `
         <span class="drag-handle">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -589,6 +661,8 @@
         </span>
         <span class="template-name">${b.name}</span>
         <span class="template-amount">${fmt(b.amount)}</span>
+        ${dueLabel}
+        <button class="template-autopay-btn${b.autopay ? ' active' : ''}" title="${b.autopay ? 'Autopay on' : 'Autopay off'}">AP</button>
         <button class="icon-btn" title="Edit">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9.5 1.5L12.5 4.5L5 12H2V9L9.5 1.5Z"/>
@@ -601,6 +675,11 @@
             <path d="M3.5 3.5L4 12H10L10.5 3.5"/>
           </svg>
         </button>`;
+      // Wire up autopay toggle
+      row.querySelector('.template-autopay-btn').onclick = () => {
+        TEMPLATE[i].autopay = !TEMPLATE[i].autopay;
+        renderTemplate();
+      };
       container.appendChild(row);
     });
   }

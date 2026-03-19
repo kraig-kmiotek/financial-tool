@@ -25,9 +25,9 @@ router.post('/reset', (req, res) => {
     db.prepare('DELETE FROM current_bills').run();
     db.prepare('DELETE FROM deposits').run();
     const insert = db.prepare(
-      'INSERT INTO current_bills (name, amount, paid, template_bill_id) VALUES (?, ?, 0, ?)'
+      'INSERT INTO current_bills (name, amount, paid, autopay, due_day, template_bill_id) VALUES (?, ?, 0, ?, ?, ?)'
     );
-    templates.forEach((t) => insert.run(t.name, t.amount, t.id));
+    templates.forEach((t) => insert.run(t.name, t.amount, t.autopay, t.due_day, t.id));
   })();
 
   const bills = db.prepare('SELECT * FROM current_bills ORDER BY rowid').all();
