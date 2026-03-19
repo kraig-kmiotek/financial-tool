@@ -7,6 +7,16 @@ router.get('/', (req, res) => {
   res.json(bills);
 });
 
+router.patch('/:id', (req, res) => {
+  const bill = db.prepare('SELECT * FROM current_bills WHERE id = ?').get(req.params.id);
+  if (!bill) return res.status(404).json({ error: 'Not found' });
+  const due_day = req.body.due_day !== undefined ? (req.body.due_day || null) : bill.due_day;
+  const autopay = req.body.autopay !== undefined ? (req.body.autopay ? 1 : 0) : bill.autopay;
+  const amount  = req.body.amount  !== undefined ? (parseFloat(req.body.amount) || 0) : bill.amount;
+  db.prepare('UPDATE current_bills SET due_day = ?, autopay = ?, amount = ? WHERE id = ?').run(due_day, autopay, amount, bill.id);
+  res.json(db.prepare('SELECT * FROM current_bills WHERE id = ?').get(bill.id));
+});
+
 router.patch('/:id/toggle', (req, res) => {
   const bill = db.prepare('SELECT * FROM current_bills WHERE id = ?').get(req.params.id);
   if (!bill) return res.status(404).json({ error: 'Not found' });

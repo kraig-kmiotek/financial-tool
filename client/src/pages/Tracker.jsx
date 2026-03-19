@@ -47,6 +47,15 @@ export default function Tracker() {
     }
   }, []);
 
+  const handleUpdate = useCallback(async (id, fields) => {
+    try {
+      const res = await api.patch(`/bills/${id}`, fields);
+      setBills((prev) => prev.map((b) => (b.id === id ? res.data : b)));
+    } catch {
+      alert('Failed to save. Please try again.');
+    }
+  }, []);
+
   const handleReset = async () => {
     if (!window.confirm('Reset all bills to unpaid for the new month and clear one-off items?\n\nYour financial summary fields (bank balance, paychecks, savings, etc.) will be kept.')) return;
     setResetting(true);
@@ -108,7 +117,7 @@ export default function Tracker() {
           unpaidTotal={unpaidTotal}
           depositTotal={depositTotal}
         />
-        <BillList bills={bills} onToggle={handleToggle} />
+        <BillList bills={bills} onToggle={handleToggle} onUpdate={handleUpdate} />
         <DepositsPanel
           deposits={deposits}
           onAdd={(d) => setDeposits((prev) => [...prev, d])}

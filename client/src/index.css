@@ -405,6 +405,77 @@ body {
   color: var(--text-secondary);
 }
 
+/* ── Bill edit button & inline strip ───────────────────────── */
+.bill-edit-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.bill-item:hover .bill-edit-btn,
+.bill-item.editing .bill-edit-btn {
+  opacity: 1;
+}
+
+.bill-edit-btn:hover { background: #f1f5f9; color: var(--text); }
+
+.bill-item.editing {
+  flex-wrap: wrap;
+  cursor: default;
+}
+
+.bill-edit-strip {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0 0.2rem 0;
+  flex-wrap: wrap;
+}
+
+.bill-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.bill-edit-field input {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  outline: none;
+  background: #fff;
+  width: 90px;
+  color: var(--text);
+}
+
+.bill-edit-field input:focus { border-color: var(--primary); }
+
+.bill-edit-autopay {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
 /* ── Unpaid total ───────────────────────────────────────────── */
 .bills-footer {
   padding: 0.75rem 1rem;

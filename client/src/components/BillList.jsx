@@ -4,7 +4,7 @@ import BillItem from './BillItem';
 const fmt = (n) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
-export default function BillList({ bills, onToggle }) {
+export default function BillList({ bills, onToggle, onUpdate }) {
   const unpaidTotal = bills
     .filter((b) => !b.paid)
     .reduce((sum, b) => sum + b.amount, 0);
@@ -25,7 +25,7 @@ export default function BillList({ bills, onToggle }) {
       ) : (
         <ul className="bills-list">
           {bills.map((bill) => (
-            <BillItem key={bill.id} bill={bill} onToggle={onToggle} />
+            <BillItem key={bill.id} bill={bill} onToggle={onToggle} onUpdate={onUpdate} />
           ))}
         </ul>
       )}
