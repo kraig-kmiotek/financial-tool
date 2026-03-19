@@ -48,7 +48,7 @@ export default function Tracker() {
   }, []);
 
   const handleReset = async () => {
-    if (!window.confirm('Reset all bills to unpaid and clear one-off items? This cannot be undone.')) return;
+    if (!window.confirm('Reset all bills to unpaid for the new month and clear one-off items?\n\nYour financial summary fields (bank balance, paychecks, savings, etc.) will be kept.')) return;
     setResetting(true);
     try {
       const res = await api.post('/bills/reset');
