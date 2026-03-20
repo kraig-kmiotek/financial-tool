@@ -7,10 +7,12 @@ const fmt = (n) =>
 export default function DepositsPanel({ deposits, onAdd, onDelete }) {
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
+  const [error, setError] = useState('');
 
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!label.trim() || amount === '') return;
+    setError('');
     try {
       const res = await api.post('/deposits', {
         label: label.trim(),
@@ -20,16 +22,17 @@ export default function DepositsPanel({ deposits, onAdd, onDelete }) {
       setLabel('');
       setAmount('');
     } catch {
-      // no-op
+      setError('Failed to add item. Please try again.');
     }
   };
 
   const handleDelete = async (id) => {
+    setError('');
     try {
       await api.delete(`/deposits/${id}`);
       onDelete(id);
     } catch {
-      // no-op
+      setError('Failed to remove item. Please try again.');
     }
   };
 
@@ -51,6 +54,16 @@ export default function DepositsPanel({ deposits, onAdd, onDelete }) {
           </span>
         )}
       </div>
+
+      {error && (
+        <p style={{ color: 'var(--danger)', fontSize: '0.8125rem', margin: '0 0 0.5rem' }}>
+          {error}
+        </p>
+      )}
+
+      {deposits.length === 0 && (
+        <p className="empty-state" style={{ padding: '1rem', margin: 0 }}>No items added yet</p>
+      )}
 
       {deposits.length > 0 && (
         <ul style={{ listStyle: 'none' }}>
