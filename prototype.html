@@ -78,6 +78,11 @@
     .bill-item.skipped .bill-name { text-decoration: line-through; color: var(--text-secondary); font-style: italic; }
     .bill-item.skipped .bill-amount { color: var(--text-secondary); }
 
+    .bill-item.overdue .bill-name,
+    .bill-item.overdue .bill-due,
+    .bill-item.overdue .bill-amount,
+    .bill-item.overdue .bill-autopay-badge { color: var(--danger); }
+
     .bill-autopay-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; border-radius: 4px; padding: 0.15rem 0.4rem; white-space: nowrap; flex-shrink: 0; }
     .bill-item.paid .bill-autopay-badge { background: #f0fdf4; color: var(--success); border-color: #bbf7d0; }
     .bill-skipped-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; background: #fef9c3; color: #92400e; border: 1px solid #fde68a; border-radius: 4px; padding: 0.15rem 0.4rem; white-space: nowrap; flex-shrink: 0; }
@@ -385,14 +390,15 @@
 
 <script>
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const currentMonth = MONTHS[new Date().getMonth()];
+  const REFERENCE_DATE = new Date(2026, 2, 12); // Mar 12, 2026 — fixed so prototype state is consistent
+  const currentMonth = MONTHS[REFERENCE_DATE.getMonth()];
   const fmt = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
   // ── Data ─────────────────────────────────────────────────────
   let BILLS = [
     { id:1, name: 'Mortgage',         amount: 1850.00, paid: false, autopay: false, due_day: 1,  skipped: false },
     { id:2, name: 'Car Note',         amount: 425.00,  paid: true,  autopay: true,  due_day: 15, skipped: false },
-    { id:3, name: 'Cable & Internet', amount: 120.00,  paid: false, autopay: true,  due_day: 8,  skipped: false },
+    { id:3, name: 'Cable & Internet', amount: 120.00,  paid: false, autopay: true,  due_day: 18, skipped: false },
     { id:4, name: 'Utilities',        amount: 95.00,   paid: false, autopay: false, due_day: 25, skipped: false },
     { id:5, name: 'Credit Card',      amount: 350.00,  paid: false, autopay: false, due_day: 28, skipped: false },
   ];
@@ -412,7 +418,9 @@
       if (b.paid) paidCount++;
 
       const li = document.createElement('li');
-      const classes = ['bill-item', b.paid ? 'paid' : '', b.skipped ? 'skipped' : '', editingId === b.id ? 'editing' : ''].filter(Boolean).join(' ');
+      const today = REFERENCE_DATE.getDate();
+      const isOverdue = !b.paid && !b.skipped && !b.autopay && b.due_day && today > b.due_day;
+      const classes = ['bill-item', b.paid ? 'paid' : '', b.skipped ? 'skipped' : '', isOverdue ? 'overdue' : '', editingId === b.id ? 'editing' : ''].filter(Boolean).join(' ');
       li.className = classes;
 
       // Check icon
