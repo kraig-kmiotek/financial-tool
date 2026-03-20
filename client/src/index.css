@@ -612,6 +612,13 @@ body {
   color: var(--text-secondary);
 }
 
+.bill-item.overdue .bill-name,
+.bill-item.overdue .bill-due,
+.bill-item.overdue .bill-amount,
+.bill-item.overdue .bill-autopay-badge {
+  color: #dc2626;
+}
+
 .bill-skipped-badge {
   font-size: 0.65rem;
   font-weight: 700;

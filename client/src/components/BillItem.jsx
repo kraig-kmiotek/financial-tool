@@ -54,10 +54,11 @@ export default function BillItem({ bill, onToggle, onUpdate, onDelete }) {
   };
 
   const isSkipped = !!bill.skipped;
+  const isOverdue = !bill.paid && !isSkipped && bill.due_day && new Date().getDate() > bill.due_day;
 
   return (
     <li
-      className={`bill-item${bill.paid ? ' paid' : ''}${isSkipped ? ' skipped' : ''}${isEditing ? ' editing' : ''}`}
+      className={`bill-item${bill.paid ? ' paid' : ''}${isSkipped ? ' skipped' : ''}${isOverdue ? ' overdue' : ''}${isEditing ? ' editing' : ''}`}
       onClick={() => !isEditing && !isSkipped && onToggle(bill.id)}
       role="checkbox"
       aria-checked={!!bill.paid}
