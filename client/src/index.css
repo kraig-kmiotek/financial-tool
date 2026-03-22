@@ -324,20 +324,21 @@ body {
   display: none;
 }
 
-/* ── Desktop 3-column layout (Tracker only) ─────────────────── */
+/* ── Desktop layout (Tracker only) ──────────────────────────── */
 @media (min-width: 960px) {
   .tracker-page .page {
-    max-width: 1380px;
+    max-width: 1600px;
     display: grid;
-    grid-template-columns: 300px 1fr 280px;
+    grid-template-columns: 580px 1fr 280px;
     align-items: start;
   }
 
-  /* Left column: summary + insights stacked */
+  /* Left column: summary + insights side by side */
   .page-left {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    align-items: start;
   }
 
   /* Show the charts panel only on desktop */
