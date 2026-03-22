@@ -56,6 +56,7 @@ router.post('/register/options', async (req, res) => {
 
 // ── Verify registration and store credential ──────────────────
 router.post('/register/verify', async (req, res) => {
+  console.log('register/verify - session ID:', req.session.id, '- has challenge:', !!req.session.regChallenge);
   if (!req.session.regChallenge) {
     return res.status(400).json({ error: 'No challenge found — start over' });
   }
