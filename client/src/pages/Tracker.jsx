@@ -181,6 +181,9 @@ export default function Tracker() {
         <h1>Bill Tracker</h1>
         <div className="header-actions">
           {/* Navigation — get to other screens */}
+          <button className="header-btn" onClick={() => navigate('/')}>
+            Tracker
+          </button>
           <button className="header-btn" onClick={() => navigate('/settings')}>
             Template
           </button>

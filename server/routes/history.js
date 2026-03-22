@@ -15,4 +15,10 @@ router.get('/', (req, res) => {
   res.json(rows);
 });
 
+// Clear all payment history
+router.delete('/', (req, res) => {
+  db.prepare('DELETE FROM payment_history').run();
+  res.json({ ok: true });
+});
+
 module.exports = router;

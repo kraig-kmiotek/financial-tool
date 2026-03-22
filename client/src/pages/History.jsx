@@ -36,6 +36,16 @@ export default function History() {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleClear = async () => {
+    if (!window.confirm('Clear all payment history? This cannot be undone.')) return;
+    try {
+      await api.delete('/history');
+      setRows([]);
+    } catch {
+      alert('Failed to clear history. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading-screen">
@@ -61,6 +71,11 @@ export default function History() {
           <button className="header-btn" onClick={() => navigate('/')}>
             ← Tracker
           </button>
+          {rows.length > 0 && (
+            <button className="header-btn danger" onClick={handleClear}>
+              Clear History
+            </button>
+          )}
         </div>
       </header>
 
