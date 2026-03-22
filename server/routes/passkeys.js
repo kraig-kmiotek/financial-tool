@@ -87,6 +87,7 @@ router.post('/register/verify', async (req, res) => {
     req.session.regChallenge = null;
     res.json({ ok: true });
   } catch (err) {
+    console.error('Registration verify error:', err.message);
     res.status(400).json({ error: err.message });
   }
 });
