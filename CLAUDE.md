@@ -83,6 +83,11 @@ total_savings    = savings_balance + move_to_savings
 
 **Template reorder**: Uses `@dnd-kit/sortable`. On drag end, client reorders state optimistically then calls `PUT /api/template/reorder` with an array of IDs. `TouchSensor` has a 150ms delay to distinguish scroll from drag on mobile.
 
+## Prototype Parity
+
+Whenever a feature is added to the full app, it must also be reflected in `prototype.html`. The prototype should
+always demonstrate the same feature set as the production app.
+
 ## Environment Variables
 
 | Variable | Description |
