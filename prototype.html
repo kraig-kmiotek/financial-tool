@@ -323,23 +323,12 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">One-Off Items</span>
-          <span style="font-size:0.875rem;font-weight:700;color:var(--success);">+$200.00</span>
+          <span id="deposit-total-display" style="font-size:0.875rem;font-weight:700;color:var(--success);">+$200.00</span>
         </div>
-        <ul style="list-style:none">
-          <li class="deposit-item">
-            <span class="deposit-label">Bonus payment</span>
-            <span class="deposit-amount positive">+$500.00</span>
-            <button class="deposit-delete"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg></button>
-          </li>
-          <li class="deposit-item">
-            <span class="deposit-label">Home repair</span>
-            <span class="deposit-amount negative">-$300.00</span>
-            <button class="deposit-delete"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg></button>
-          </li>
-        </ul>
-        <form class="deposit-add-form" onsubmit="return false">
-          <input placeholder="Description" />
-          <input class="amount" type="number" placeholder="Amount" step="0.01" />
+        <ul style="list-style:none" id="deposit-list"></ul>
+        <form class="deposit-add-form" onsubmit="addDeposit(event)">
+          <input placeholder="Description" id="new-deposit-label" />
+          <input class="amount" type="number" placeholder="Amount" step="0.01" id="new-deposit-amount" />
           <button type="submit" class="btn btn-primary btn-sm">Add</button>
         </form>
       </div>
@@ -475,15 +464,7 @@
 <div id="view-history" class="hidden">
   <div class="page">
     <div class="proto-banner">Payment History — every paid/unpaid toggle is recorded here</div>
-    <div class="card" id="history-card">
-      <div class="card-header">
-        <span class="card-title">March 2026</span>
-        <span id="history-paid-count" style="font-size:0.8rem;color:var(--text-secondary);">0 payments</span>
-      </div>
-      <ul class="bills-list" id="history-list">
-        <li class="empty-state">No payment history yet. Mark bills as paid to start the audit trail.</li>
-      </ul>
-    </div>
+    <div id="history-content"></div>
   </div>
 </div>
 
@@ -503,7 +484,13 @@
   ];
   let nextId = 6;
   let editingId = null;
-  let HISTORY = []; // { bill_name, amount, action, time }
+  let templateEditingId = null;
+  let HISTORY = []; // { bill_name, amount, action, time, month_key }
+  let DEPOSITS = [
+    { id: 1, label: 'Bonus payment', amount: 500 },
+    { id: 2, label: 'Home repair',   amount: -300 },
+  ];
+  let nextDepositId = 3;
 
   const TEMPLATE = BILLS.map(b => ({ ...b }));
 
@@ -513,9 +500,20 @@
     ul.innerHTML = '';
     let unpaid = 0, paidCount = 0;
 
+    // Sort: unpaid by due_day → skipped → paid (matching live app behaviour)
+    const sorted = [...BILLS].sort((a, b) => {
+      const aGroup = a.paid ? 2 : a.skipped ? 1 : 0;
+      const bGroup = b.paid ? 2 : b.skipped ? 1 : 0;
+      if (aGroup !== bGroup) return aGroup - bGroup;
+      return (a.due_day ?? 32) - (b.due_day ?? 32);
+    });
+
     BILLS.forEach((b) => {
       if (!b.paid && !b.skipped) unpaid += b.amount;
       if (b.paid) paidCount++;
+    });
+
+    sorted.forEach((b) => {
 
       const li = document.createElement('li');
       const today = REFERENCE_DATE.getDate();
@@ -578,7 +576,8 @@
         if (e && e.stopPropagation) e.stopPropagation();
         if (b.skipped || editingId === b.id) return;
         b.paid = !b.paid;
-        HISTORY.unshift({ bill_name: b.name, amount: b.amount, action: b.paid ? 'paid' : 'unpaid', time: new Date() });
+        const mk = REFERENCE_DATE.toISOString().slice(0, 7);
+        HISTORY.unshift({ bill_name: b.name, amount: b.amount, action: b.paid ? 'paid' : 'unpaid', time: new Date(), month_key: mk });
         renderBills(); renderHistory(); recalc();
       };
       li.querySelector('.bill-check').onclick = toggle;
@@ -636,6 +635,41 @@
     renderBills(); recalc();
   }
 
+  // ── Deposits ─────────────────────────────────────────────────
+  function renderDeposits() {
+    const ul = document.getElementById('deposit-list');
+    ul.innerHTML = '';
+    const total = DEPOSITS.reduce((s, d) => s + d.amount, 0);
+    const totalEl = document.getElementById('deposit-total-display');
+    totalEl.textContent = (total >= 0 ? '+' : '') + fmt(total);
+    totalEl.style.color = total >= 0 ? 'var(--success)' : 'var(--danger)';
+
+    DEPOSITS.forEach((d) => {
+      const li = document.createElement('li');
+      li.className = 'deposit-item';
+      li.innerHTML = `
+        <span class="deposit-label">${d.label}</span>
+        <span class="deposit-amount ${d.amount >= 0 ? 'positive' : 'negative'}">${d.amount >= 0 ? '+' : ''}${fmt(d.amount)}</span>
+        <button class="deposit-delete" title="Remove"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg></button>`;
+      li.querySelector('.deposit-delete').onclick = () => {
+        DEPOSITS = DEPOSITS.filter(x => x.id !== d.id);
+        renderDeposits(); recalc();
+      };
+      ul.appendChild(li);
+    });
+  }
+
+  function addDeposit(e) {
+    e.preventDefault();
+    const label = document.getElementById('new-deposit-label').value.trim();
+    const amount = parseFloat(document.getElementById('new-deposit-amount').value);
+    if (!label || isNaN(amount)) return;
+    DEPOSITS.push({ id: nextDepositId++, label, amount });
+    document.getElementById('new-deposit-label').value = '';
+    document.getElementById('new-deposit-amount').value = '';
+    renderDeposits(); recalc();
+  }
+
   // ── Summary recalc ───────────────────────────────────────────
   let saveTimer = null;
   function showSaveIndicator() {
@@ -661,8 +695,8 @@
     const unpaid  = unpaidOverride !== undefined
       ? unpaidOverride
       : BILLS.filter(b => !b.paid && !b.skipped).reduce((s, b) => s + b.amount, 0);
-    const deposits = 200;
-    const net     = (bank + income - unpaid + deposits) - moveSav;
+    const depositTotal = DEPOSITS.reduce((s, d) => s + d.amount, 0);
+    const net     = (bank + income - unpaid + depositTotal) - moveSav;
     const totSav  = savBal + moveSav;
     document.getElementById('income-display').textContent = fmt(income);
     document.getElementById('total-savings-display').textContent = fmt(totSav);
@@ -671,7 +705,7 @@
     netEl.className = 'net-value ' + (net >= 0 ? 'positive' : 'negative');
     document.getElementById('unpaid-display').textContent = fmt(unpaid);
     document.getElementById('footer-unpaid').textContent = fmt(unpaid);
-    renderCharts({ bank, income, unpaid, moveSav, deposits, net });
+    renderCharts({ bank, income, unpaid, moveSav, deposits: depositTotal, net });
   }
 
   // ── Charts rendering ─────────────────────────────────────────
@@ -785,52 +819,124 @@
   function renderTemplate() {
     const container = document.getElementById('template-list');
     container.innerHTML = '';
+    document.getElementById('template-count').textContent = `${TEMPLATE.length} bills`;
+
     TEMPLATE.forEach((b, i) => {
-      const row = document.createElement('div');
-      row.className = 'template-item';
-      const dueLabel = b.due_day
-        ? `<span class="template-due-day">Due ${b.due_day}</span>`
-        : `<span class="template-due-day template-due-day--empty">—</span>`;
-      row.innerHTML = `
-        <span class="drag-handle"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="3" width="10" height="2" rx="1"/><rect x="3" y="7" width="10" height="2" rx="1"/><rect x="3" y="11" width="10" height="2" rx="1"/></svg></span>
-        <span class="template-name">${b.name}</span>
-        <span class="template-amount">${fmt(b.amount)}</span>
-        ${dueLabel}
-        <button class="template-autopay-btn${b.autopay ? ' active' : ''}">${b.autopay ? 'AP ✓' : 'AP'}</button>
-        <button class="icon-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5L12.5 4.5L5 12H2V9L9.5 1.5Z"/></svg></button>
-        <button class="icon-btn" title="Delete"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="2,3.5 12,3.5"/><path d="M4.5 3.5V2.5C4.5 2 4.9 1.5 5.5 1.5H8.5C9.1 1.5 9.5 2 9.5 2.5V3.5"/><path d="M3.5 3.5L4 12H10L10.5 3.5"/></svg></button>`;
-      row.querySelector('.template-autopay-btn').onclick = () => {
-        TEMPLATE[i].autopay = !TEMPLATE[i].autopay;
-        renderTemplate();
-      };
-      container.appendChild(row);
+      if (templateEditingId === b.id) {
+        // Inline edit form
+        const form = document.createElement('form');
+        form.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.75rem;border-bottom:1px solid var(--border);flex-wrap:wrap;background:#f8fafc;';
+        form.innerHTML = `
+          <input type="text" value="${b.name}" id="te-name-${b.id}" style="flex:1;min-width:120px;padding:0.35rem 0.5rem;border:1px solid var(--border);border-radius:6px;font-size:0.875rem;" autofocus />
+          <input type="number" step="0.01" value="${b.amount}" id="te-amount-${b.id}" style="width:90px;padding:0.35rem 0.5rem;border:1px solid var(--border);border-radius:6px;font-size:0.875rem;" />
+          <input type="number" min="1" max="31" placeholder="Day" value="${b.due_day || ''}" id="te-due-${b.id}" style="width:70px;padding:0.35rem 0.5rem;border:1px solid var(--border);border-radius:6px;font-size:0.875rem;" />
+          <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+            <input type="checkbox" id="te-ap-${b.id}" ${b.autopay ? 'checked' : ''} /> Autopay
+          </label>
+          <div style="display:flex;gap:0.4rem;margin-left:auto;">
+            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            <button type="button" class="btn btn-secondary btn-sm">Cancel</button>
+          </div>`;
+        form.onsubmit = (e) => {
+          e.preventDefault();
+          const nameVal = document.getElementById(`te-name-${b.id}`).value.trim();
+          if (nameVal) b.name = nameVal;
+          b.amount = parseFloat(document.getElementById(`te-amount-${b.id}`).value) || 0;
+          b.due_day = parseInt(document.getElementById(`te-due-${b.id}`).value) || null;
+          b.autopay = document.getElementById(`te-ap-${b.id}`).checked;
+          templateEditingId = null;
+          renderTemplate();
+        };
+        form.querySelector('[type="button"]').onclick = () => { templateEditingId = null; renderTemplate(); };
+        container.appendChild(form);
+      } else {
+        // Normal row
+        const row = document.createElement('div');
+        row.className = 'template-item';
+        const dueLabel = b.due_day
+          ? `<span class="template-due-day">Due ${b.due_day}</span>`
+          : `<span class="template-due-day template-due-day--empty">—</span>`;
+        row.innerHTML = `
+          <span class="drag-handle"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="3" width="10" height="2" rx="1"/><rect x="3" y="7" width="10" height="2" rx="1"/><rect x="3" y="11" width="10" height="2" rx="1"/></svg></span>
+          <span class="template-name">${b.name}</span>
+          <span class="template-amount">${fmt(b.amount)}</span>
+          ${dueLabel}
+          <button class="template-autopay-btn${b.autopay ? ' active' : ''}" title="${b.autopay ? 'Autopay on' : 'Autopay off'}">${b.autopay ? 'AP ✓' : 'AP'}</button>
+          <button class="icon-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5L12.5 4.5L5 12H2V9L9.5 1.5Z"/></svg></button>
+          <button class="icon-btn" title="Delete"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="2,3.5 12,3.5"/><path d="M4.5 3.5V2.5C4.5 2 4.9 1.5 5.5 1.5H8.5C9.1 1.5 9.5 2 9.5 2.5V3.5"/><path d="M3.5 3.5L4 12H10L10.5 3.5"/></svg></button>`;
+        row.querySelector('.template-autopay-btn').onclick = () => { TEMPLATE[i].autopay = !TEMPLATE[i].autopay; renderTemplate(); };
+        row.querySelector('[title="Edit"]').onclick = () => { templateEditingId = b.id; renderTemplate(); };
+        row.querySelector('[title="Delete"]').onclick = () => {
+          if (confirm(`Delete "${b.name}" from the template?`)) { TEMPLATE.splice(i, 1); renderTemplate(); }
+        };
+        container.appendChild(row);
+      }
     });
   }
 
   // ── History rendering ────────────────────────────────────────
+  function fmtMonthKey(key) {
+    const [year, month] = key.split('-');
+    return new Date(Number(year), Number(month) - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
   function renderHistory() {
-    const ul = document.getElementById('history-list');
-    const countEl = document.getElementById('history-paid-count');
-    ul.innerHTML = '';
+    const container = document.getElementById('history-content');
+    container.innerHTML = '';
+
     if (HISTORY.length === 0) {
-      ul.innerHTML = '<li class="empty-state">No payment history yet. Mark bills as paid to start the audit trail.</li>';
-      countEl.textContent = '0 payments';
+      container.innerHTML = `<div class="card"><div class="empty-state">No payment history yet. Mark bills as paid to start the audit trail.</div></div>`;
       return;
     }
-    const paidCount = HISTORY.filter(h => h.action === 'paid').length;
-    countEl.textContent = `${paidCount} payment${paidCount !== 1 ? 's' : ''}`;
-    HISTORY.forEach((h) => {
-      const li = document.createElement('li');
-      li.className = 'history-item';
-      const timeStr = h.time.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-      li.innerHTML = `
-        <span class="history-action-dot ${h.action}"></span>
-        <span class="history-bill-name">${h.bill_name}</span>
-        <span class="history-amount">${fmt(h.amount)}</span>
-        <span class="history-badge ${h.action}">${h.action === 'paid' ? 'Paid' : 'Unpaid'}</span>
-        <span class="history-date">${timeStr}</span>`;
-      ul.appendChild(li);
+
+    // Group by month_key, newest first
+    const grouped = {};
+    const keys = [];
+    HISTORY.forEach(h => {
+      if (!grouped[h.month_key]) { grouped[h.month_key] = []; keys.push(h.month_key); }
+      grouped[h.month_key].push(h);
     });
+
+    keys.forEach(mk => {
+      const items = grouped[mk];
+      const paidCount = items.filter(h => h.action === 'paid').length;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.marginBottom = '1rem';
+
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'card-header';
+      headerDiv.innerHTML = `
+        <span class="card-title">${fmtMonthKey(mk)}</span>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="font-size:0.8rem;color:var(--text-secondary);">${paidCount} payments</span>
+          ${mk === keys[0] ? `<button class="btn btn-danger btn-sm" style="font-size:0.75rem;padding:0.3rem 0.6rem;" onclick="clearHistory()">Clear History</button>` : ''}
+        </div>`;
+      card.appendChild(headerDiv);
+
+      const ul = document.createElement('ul');
+      ul.className = 'bills-list';
+      items.forEach(h => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        const timeStr = h.time.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+        li.innerHTML = `
+          <span class="history-action-dot ${h.action}"></span>
+          <span class="history-bill-name">${h.bill_name}</span>
+          <span class="history-amount">${fmt(h.amount)}</span>
+          <span class="history-badge ${h.action}">${h.action === 'paid' ? 'Paid' : 'Unpaid'}</span>
+          <span class="history-date">${timeStr}</span>`;
+        ul.appendChild(li);
+      });
+      card.appendChild(ul);
+      container.appendChild(card);
+    });
+  }
+
+  function clearHistory() {
+    if (!confirm('Clear all payment history? This cannot be undone.')) return;
+    HISTORY = [];
+    renderHistory();
   }
 
   // ── CSV Export ───────────────────────────────────────────────
@@ -903,6 +1009,7 @@
   // ── Init ────────────────────────────────────────────────────
   renderBills();
   renderTemplate();
+  renderDeposits();
   renderHistory();
   recalc();
 </script>
