@@ -171,7 +171,12 @@ router.post('/login/verify', async (req, res) => {
     );
 
     req.session.authenticated = true;
-    res.json({ ok: true });
+    // Explicitly save the session before responding so the cookie is guaranteed
+    // to be persisted before the client makes subsequent authenticated requests.
+    req.session.save((err) => {
+      if (err) return res.status(500).json({ error: 'Session save failed' });
+      res.json({ ok: true });
+    });
   } catch (err) {
     res.status(401).json({ error: err.message });
   }

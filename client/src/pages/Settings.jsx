@@ -401,6 +401,7 @@ export default function Settings() {
 
           <form className="template-add-form" onSubmit={handleAdd}>
             <input
+              type="text"
               className="template-add-name"
               placeholder="Bill name"
               value={newName}

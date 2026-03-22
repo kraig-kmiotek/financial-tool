@@ -16,17 +16,20 @@ function SummaryField({ label, children }) {
 export default function SummaryPanel({ summary, onChange, unpaidTotal, depositTotal }) {
   const saveTimer = useRef(null);
   const clearTimer = useRef(null);
+  const pendingData = useRef(null); // tracks unsaved data so we can flush on unmount
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
 
   const handleChange = (field, value) => {
     const updated = { ...summary, [field]: parseFloat(value) || 0 };
     onChange(updated);
+    pendingData.current = updated;
     setSaveStatus('saving');
     clearTimeout(saveTimer.current);
     clearTimeout(clearTimer.current);
     saveTimer.current = setTimeout(async () => {
       try {
         await api.put('/summary', updated);
+        pendingData.current = null;
         setSaveStatus('saved');
         clearTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
       } catch {
@@ -39,6 +42,10 @@ export default function SummaryPanel({ summary, onChange, unpaidTotal, depositTo
   useEffect(() => () => {
     clearTimeout(saveTimer.current);
     clearTimeout(clearTimer.current);
+    // Flush any pending save instead of dropping it when navigating away
+    if (pendingData.current) {
+      api.put('/summary', pendingData.current).catch(() => {});
+    }
   }, []);
 
   const incomeRemaining = (summary.paychecks_remaining || 0) * (summary.paycheck_amount || 0);

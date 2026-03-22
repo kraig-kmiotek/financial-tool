@@ -8,6 +8,9 @@ const { db, initDb } = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust Railway's reverse proxy so secure cookies work correctly over HTTPS
+app.set('trust proxy', 1);
+
 initDb();
 
 app.use(express.json());
