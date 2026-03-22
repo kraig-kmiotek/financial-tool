@@ -140,6 +140,8 @@
     /* ── Template / Settings ── */
     .template-item { display: flex; align-items: center; padding: 0.7rem 0.75rem; border-bottom: 1px solid var(--border); gap: 0.5rem; background: #fff; }
     .template-item:last-child { border-bottom: none; }
+    .template-item.drag-over { border-top: 2px solid var(--primary); }
+    .template-item.dragging { opacity: 0.4; }
     .drag-handle { cursor: grab; color: var(--text-secondary); padding: 0.25rem; display: flex; align-items: center; flex-shrink: 0; }
     .template-name { flex: 1; font-size: 0.9rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .template-amount { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
@@ -485,6 +487,7 @@
   let nextId = 6;
   let editingId = null;
   let templateEditingId = null;
+  let dragSrcIdx = null;
   let HISTORY = []; // { bill_name, amount, action, time, month_key }
   let DEPOSITS = [
     { id: 1, label: 'Bonus payment', amount: 500 },
@@ -853,6 +856,7 @@
         // Normal row
         const row = document.createElement('div');
         row.className = 'template-item';
+        row.draggable = true;
         const dueLabel = b.due_day
           ? `<span class="template-due-day">Due ${b.due_day}</span>`
           : `<span class="template-due-day template-due-day--empty">—</span>`;
@@ -869,6 +873,30 @@
         row.querySelector('[title="Delete"]').onclick = () => {
           if (confirm(`Delete "${b.name}" from the template?`)) { TEMPLATE.splice(i, 1); renderTemplate(); }
         };
+        // Drag-to-reorder
+        row.addEventListener('dragstart', (e) => {
+          dragSrcIdx = i;
+          e.dataTransfer.effectAllowed = 'move';
+          setTimeout(() => row.classList.add('dragging'), 0);
+        });
+        row.addEventListener('dragend', () => {
+          row.classList.remove('dragging');
+          container.querySelectorAll('.template-item').forEach((r) => r.classList.remove('drag-over'));
+        });
+        row.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          container.querySelectorAll('.template-item').forEach((r) => r.classList.remove('drag-over'));
+          row.classList.add('drag-over');
+        });
+        row.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (dragSrcIdx === null || dragSrcIdx === i) return;
+          const [moved] = TEMPLATE.splice(dragSrcIdx, 1);
+          TEMPLATE.splice(i, 0, moved);
+          dragSrcIdx = null;
+          renderTemplate();
+        });
         container.appendChild(row);
       }
     });
