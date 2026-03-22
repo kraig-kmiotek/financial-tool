@@ -49,8 +49,17 @@ router.patch('/:id/autopay', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  db.prepare('DELETE FROM template_bills WHERE id = ?').run(req.params.id);
-  res.json({ ok: true });
+  try {
+    db.transaction(() => {
+      // Null out FK references in current_bills before deleting the template row
+      db.prepare('UPDATE current_bills SET template_bill_id = NULL WHERE template_bill_id = ?').run(req.params.id);
+      db.prepare('DELETE FROM template_bills WHERE id = ?').run(req.params.id);
+    })();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Template delete error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
