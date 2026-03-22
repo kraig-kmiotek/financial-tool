@@ -89,7 +89,7 @@ export default function AppHeader({ children }) {
   return (
     <header className="app-header">
       <div className="app-header-inner">
-        <h1>Bill Tracker</h1>
+        <h1>Bill Tracker <span style={{ fontWeight: 400, fontSize: '0.85em', opacity: 0.8 }}>(v1.0)</span></h1>
         <div className="header-actions">
           <button className="header-btn" onClick={() => navigate('/')}>Tracker</button>
           <button className="header-btn" onClick={() => navigate('/settings')}>Template</button>
