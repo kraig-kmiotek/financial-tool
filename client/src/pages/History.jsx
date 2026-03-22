@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import AppHeader from '../components/AppHeader';
 
 const fmt = (n) =>
   Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -26,7 +26,6 @@ function fmtDateTime(s) {
 }
 
 export default function History() {
-  const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -65,19 +64,13 @@ export default function History() {
 
   return (
     <div className="settings-page">
-      <header className="app-header">
-        <h1>Payment History</h1>
-        <div className="header-actions">
-          <button className="header-btn" onClick={() => navigate('/')}>
-            ← Tracker
+      <AppHeader>
+        {rows.length > 0 && (
+          <button className="header-btn danger" onClick={handleClear}>
+            Clear History
           </button>
-          {rows.length > 0 && (
-            <button className="header-btn danger" onClick={handleClear}>
-              Clear History
-            </button>
-          )}
-        </div>
-      </header>
+        )}
+      </AppHeader>
 
       <div className="page">
         {monthKeys.length === 0 ? (

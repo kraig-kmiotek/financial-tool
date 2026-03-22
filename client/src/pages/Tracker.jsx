@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import AppHeader from '../components/AppHeader';
 import BillList from '../components/BillList';
 import SummaryPanel from '../components/SummaryPanel';
 import DepositsPanel from '../components/DepositsPanel';
@@ -15,7 +15,6 @@ const DEFAULT_SUMMARY = {
 };
 
 export default function Tracker() {
-  const navigate = useNavigate();
   const [bills, setBills] = useState([]);
   const [summary, setSummary] = useState(DEFAULT_SUMMARY);
   const [deposits, setDeposits] = useState([]);
@@ -81,11 +80,6 @@ export default function Tracker() {
     } finally {
       setResetting(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await api.post('/auth/logout').catch(() => {});
-    window.location.href = '/login';
   };
 
   const handleExportCSV = () => {
@@ -177,39 +171,16 @@ export default function Tracker() {
 
   return (
     <div className="tracker-page">
-      <header className="app-header">
-        <h1>Bill Tracker</h1>
-        <div className="header-actions">
-          {/* Navigation — get to other screens */}
-          <button className="header-btn" onClick={() => navigate('/')}>
-            Tracker
-          </button>
-          <button className="header-btn" onClick={() => navigate('/settings')}>
-            Template
-          </button>
-          <button className="header-btn" onClick={() => navigate('/history')}>
-            History
-          </button>
-
-          {/* Visual separator between nav and action buttons (desktop only) */}
-          <span className="header-divider" aria-hidden="true" />
-
-          {/* Actions */}
-          <button className="header-btn" onClick={handleExportCSV}>
-            Export
-          </button>
-          <button
-            className="header-btn danger"
-            onClick={handleReset}
-            disabled={resetting}
-          >
-            {resetting ? 'Resetting…' : 'Reset Month'}
-          </button>
-          <button className="header-btn" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </header>
+      <AppHeader>
+        <button className="header-btn" onClick={handleExportCSV}>Export</button>
+        <button
+          className="header-btn danger"
+          onClick={handleReset}
+          disabled={resetting}
+        >
+          {resetting ? 'Resetting…' : 'Reset Month'}
+        </button>
+      </AppHeader>
 
       <div className="page">
         <SummaryPanel

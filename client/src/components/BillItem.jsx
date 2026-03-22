@@ -66,7 +66,7 @@ export default function BillItem({ bill, onToggle, onUpdate, onDelete }) {
       onKeyDown={(e) => !isEditing && !isSkipped && (e.key === 'Enter' || e.key === ' ') ? onToggle(bill.id) : null}
     >
       <div className="bill-check">
-        {bill.paid && !isSkipped && (
+        {!!bill.paid && !isSkipped && (
           <svg viewBox="0 0 12 12" aria-hidden="true">
             <polyline points="1.5,6 4.5,9 10.5,3" />
           </svg>

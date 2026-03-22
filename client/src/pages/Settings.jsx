@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { startRegistration } from '@simplewebauthn/browser';
+import AppHeader from '../components/AppHeader';
 import {
   DndContext,
   closestCenter,
@@ -250,7 +250,6 @@ function PasskeyPanel() {
 
 // ── Main Settings page ──────────────────────────────────────────
 export default function Settings() {
-  const navigate = useNavigate();
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -312,8 +311,9 @@ export default function Settings() {
     try {
       await api.delete(`/template/${id}`);
       setBills((prev) => prev.filter((b) => b.id !== id));
-    } catch {
-      alert('Failed to delete. Please try again.');
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.response?.status || err.message || 'Unknown error';
+      alert(`Failed to delete (${msg}). Please try again.`);
     }
   };
 
@@ -347,14 +347,7 @@ export default function Settings() {
 
   return (
     <div className="settings-page">
-      <header className="app-header">
-        <h1>Bill Template</h1>
-        <div className="header-actions">
-          <button className="header-btn" onClick={() => navigate('/')}>
-            ← Tracker
-          </button>
-        </div>
-      </header>
+      <AppHeader />
 
       <div className="page">
         <div className="card">
