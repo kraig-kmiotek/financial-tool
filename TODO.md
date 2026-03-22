@@ -8,8 +8,9 @@
 ## Deployment Checklist
 - [x] Pin Node version in `engines` field (>=24.0.0) and upgrade `better-sqlite3` to v12 (prebuilt binaries for Node 24)
 - [x] Add SQLite-backed session store so sessions survive process restarts/deploys
-- [ ] Set `RP_ID` and `RP_ORIGIN` env vars on Railway for WebAuthn to work in production
-- [ ] Confirm Railway Volume is mounted at `/app/data` with `DATABASE_PATH=/app/data/bills.db` so the database persists across deploys
+- [x] Set `RP_ID` and `RP_ORIGIN` env vars on Railway for WebAuthn to work in production
+- [x] Confirm Railway Volume is mounted at `/app/data` with `DATABASE_PATH=/app/data/bills.db` so the database persists across deploys
+- [x] Fix WebAuthn mobile: replace session-cookie challenge with DB token (session cookies don't survive OS biometric handoff)
 
 ## Polish / Bug Fixes
 - [x] Add empty state message to deposits panel when no deposits exist
