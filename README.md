@@ -4,7 +4,7 @@ A personal bill tracking web app built to replace a monthly Excel workflow. Trac
 
 ## Try the Prototype
 
-Want to see it before deploying? [`prototype.html`](prototype.html) is a fully interactive, zero-dependency mock of the app — no server or install required. Download the file and open it in any browser to explore the UI and features.
+Want to see it before deploying? Check out the **[live prototype](https://kraig-kmiotek.github.io/financial-tool/prototype.html)** — a fully interactive, zero-dependency mock of the app. No server or install required, runs entirely in the browser.
 
 ## Features
 
