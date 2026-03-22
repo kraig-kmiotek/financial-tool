@@ -161,6 +161,15 @@ export default function Tracker() {
 
   const depositTotal = deposits.reduce((sum, d) => sum + d.amount, 0);
 
+  // Display order: unpaid by due_day → skipped by due_day → paid by due_day.
+  // Bills without a due date sort after those with one within each group.
+  const sortedBills = [...bills].sort((a, b) => {
+    const aGroup = a.paid ? 2 : a.skipped ? 1 : 0;
+    const bGroup = b.paid ? 2 : b.skipped ? 1 : 0;
+    if (aGroup !== bGroup) return aGroup - bGroup;
+    return (a.due_day ?? 32) - (b.due_day ?? 32);
+  });
+
   if (loading) {
     return (
       <div className="loading-screen">
@@ -193,7 +202,7 @@ export default function Tracker() {
         {/* Center column: bills + one-off items (stacked on mobile, grid col on desktop) */}
         <div className="page-center">
           <BillList
-            bills={bills}
+            bills={sortedBills}
             onToggle={handleToggle}
             onUpdate={handleUpdate}
             onDelete={handleDeleteBill}
