@@ -24,8 +24,9 @@ export default function Login({ onLogin }) {
     setBusy(true);
     try {
       const optRes = await api.post('/auth/passkey/login/options');
-      const credential = await startAuthentication({ optionsJSON: optRes.data });
-      await api.post('/auth/passkey/login/verify', { credential });
+      const { options, challengeToken } = optRes.data;
+      const credential = await startAuthentication({ optionsJSON: options });
+      await api.post('/auth/passkey/login/verify', { credential, challengeToken });
       onLogin();
     } catch (err) {
       setError(err?.response?.data?.error || 'Authentication failed. Try again.');
@@ -42,15 +43,18 @@ export default function Login({ onLogin }) {
     setBusy(true);
     try {
       const optRes = await api.post('/auth/passkey/register/options', { password });
-      const credential = await startRegistration({ optionsJSON: optRes.data });
+      const { options, challengeToken } = optRes.data;
+      const credential = await startRegistration({ optionsJSON: options });
       await api.post('/auth/passkey/register/verify', {
         credential,
         deviceName: deviceName.trim() || 'My device',
+        challengeToken,
       });
       // Registration succeeded — now log in
       const loginOptRes = await api.post('/auth/passkey/login/options');
-      const authCredential = await startAuthentication({ optionsJSON: loginOptRes.data });
-      await api.post('/auth/passkey/login/verify', { credential: authCredential });
+      const { options: loginOptions, challengeToken: loginChallengeToken } = loginOptRes.data;
+      const authCredential = await startAuthentication({ optionsJSON: loginOptions });
+      await api.post('/auth/passkey/login/verify', { credential: authCredential, challengeToken: loginChallengeToken });
       onLogin();
     } catch (err) {
       setError(err?.response?.data?.error || 'Registration failed. Try again.');

@@ -90,6 +90,16 @@ function initDb() {
   try { db.exec('ALTER TABLE current_bills ADD COLUMN due_day INTEGER'); } catch {}
   try { db.exec('ALTER TABLE current_bills ADD COLUMN skipped INTEGER NOT NULL DEFAULT 0'); } catch {}
 
+  // Short-lived WebAuthn challenges — avoids relying on session cookies surviving
+  // the OS-level biometric handoff on mobile browsers
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS webauthn_challenges (
+      token TEXT PRIMARY KEY,
+      challenge TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
   // Payment history — append-only audit log of every paid/unpaid toggle
   db.exec(`
     CREATE TABLE IF NOT EXISTS payment_history (

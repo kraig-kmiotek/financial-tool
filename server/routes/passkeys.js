@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -20,6 +21,26 @@ function getExpectedOrigins() {
     return process.env.RP_ORIGIN.split(',').map((o) => o.trim());
   }
   return ['http://localhost:5173', 'http://localhost:3001'];
+}
+
+// Store a challenge in the DB and return a token the client echoes back.
+// This avoids relying on session cookies surviving the OS biometric handoff on mobile.
+function storeChallenge(challenge) {
+  const token = crypto.randomBytes(32).toString('hex');
+  db.prepare('INSERT INTO webauthn_challenges (token, challenge) VALUES (?, ?)').run(token, challenge);
+  // Clean up stale challenges older than 5 minutes
+  db.prepare("DELETE FROM webauthn_challenges WHERE created_at < datetime('now', '-5 minutes')").run();
+  return token;
+}
+
+// Retrieve and immediately delete a challenge by token (one-time use).
+function consumeChallenge(token) {
+  if (!token) return null;
+  const row = db.prepare('SELECT challenge FROM webauthn_challenges WHERE token = ?').get(token);
+  if (row) {
+    db.prepare('DELETE FROM webauthn_challenges WHERE token = ?').run(token);
+  }
+  return row?.challenge || null;
 }
 
 // ── Whether any passkeys are registered (used by login page) ──
@@ -50,22 +71,23 @@ router.post('/register/options', async (req, res) => {
     },
   });
 
-  req.session.regChallenge = options.challenge;
-  console.log('register/options - session ID:', req.session.id, '- challenge set:', !!options.challenge);
-  res.json(options);
+  const challengeToken = storeChallenge(options.challenge);
+  res.json({ options, challengeToken });
 });
 
 // ── Verify registration and store credential ──────────────────
 router.post('/register/verify', async (req, res) => {
-  console.log('register/verify - session ID:', req.session.id, '- has challenge:', !!req.session.regChallenge);
-  if (!req.session.regChallenge) {
+  const { credential, deviceName, challengeToken } = req.body;
+  const expectedChallenge = consumeChallenge(challengeToken);
+
+  if (!expectedChallenge) {
     return res.status(400).json({ error: 'No challenge found — start over' });
   }
 
   try {
     const verification = await verifyRegistrationResponse({
-      response: req.body.credential,
-      expectedChallenge: req.session.regChallenge,
+      response: credential,
+      expectedChallenge,
       expectedOrigin: getExpectedOrigins(),
       expectedRPID: getRpID(),
     });
@@ -74,19 +96,18 @@ router.post('/register/verify', async (req, res) => {
       return res.status(400).json({ error: 'Verification failed' });
     }
 
-    const { credential } = verification.registrationInfo;
-    const deviceName = req.body.deviceName?.trim() || 'Unknown device';
+    const { credential: cred } = verification.registrationInfo;
+    const name = deviceName?.trim() || 'Unknown device';
 
     db.prepare(
       'INSERT INTO passkeys (credential_id, public_key, counter, device_name) VALUES (?, ?, ?, ?)'
     ).run(
-      credential.id,
-      Buffer.from(credential.publicKey).toString('base64url'),
-      credential.counter,
-      deviceName
+      cred.id,
+      Buffer.from(cred.publicKey).toString('base64url'),
+      cred.counter,
+      name
     );
 
-    req.session.regChallenge = null;
     res.json({ ok: true });
   } catch (err) {
     console.error('Registration verify error:', err.message);
@@ -107,17 +128,20 @@ router.post('/login/options', async (req, res) => {
     userVerification: 'preferred',
   });
 
-  req.session.authChallenge = options.challenge;
-  res.json(options);
+  const challengeToken = storeChallenge(options.challenge);
+  res.json({ options, challengeToken });
 });
 
 // ── Verify authentication ─────────────────────────────────────
 router.post('/login/verify', async (req, res) => {
-  if (!req.session.authChallenge) {
+  const { credential, challengeToken } = req.body;
+  const expectedChallenge = consumeChallenge(challengeToken);
+
+  if (!expectedChallenge) {
     return res.status(400).json({ error: 'No challenge found — start over' });
   }
 
-  const credentialId = req.body.credential?.id;
+  const credentialId = credential?.id;
   const passkey = db.prepare('SELECT * FROM passkeys WHERE credential_id = ?').get(credentialId);
 
   if (!passkey) {
@@ -126,8 +150,8 @@ router.post('/login/verify', async (req, res) => {
 
   try {
     const verification = await verifyAuthenticationResponse({
-      response: req.body.credential,
-      expectedChallenge: req.session.authChallenge,
+      response: credential,
+      expectedChallenge,
       expectedOrigin: getExpectedOrigins(),
       expectedRPID: getRpID(),
       credential: {
@@ -146,7 +170,6 @@ router.post('/login/verify', async (req, res) => {
       passkey.id
     );
 
-    req.session.authChallenge = null;
     req.session.authenticated = true;
     res.json({ ok: true });
   } catch (err) {
