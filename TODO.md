@@ -14,6 +14,6 @@
 - [x] Add React error boundary so a JS crash doesn't show a white screen
 
 ## Future Features
-- [ ] Bill payment history / audit trail
-- [ ] CSV / JSON export
+- [x] Bill payment history / audit trail
+- [x] CSV / JSON export
 - [ ] Recurring deposits (not just one-off)

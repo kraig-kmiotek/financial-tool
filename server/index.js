@@ -33,6 +33,7 @@ app.use('/api/bills', requireAuth, require('./routes/bills'));
 app.use('/api/template', requireAuth, require('./routes/template'));
 app.use('/api/summary', requireAuth, require('./routes/summary'));
 app.use('/api/deposits', requireAuth, require('./routes/deposits'));
+app.use('/api/history', requireAuth, require('./routes/history'));
 
 // Serve React build in production
 if (process.env.NODE_ENV === 'production') {

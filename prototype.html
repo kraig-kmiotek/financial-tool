@@ -175,6 +175,19 @@
     .login-setup-hint { font-size: 0.875rem; color: var(--text-secondary); text-align: center; }
     .login-secondary-link { background: none; border: none; color: var(--primary); font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center; padding: 0.25rem; text-decoration: underline; text-underline-offset: 2px; }
 
+    /* ── Payment History ── */
+    .history-item { display: flex; align-items: center; padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); gap: 0.6rem; }
+    .history-item:last-child { border-bottom: none; }
+    .history-action-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .history-action-dot.paid { background: var(--success); }
+    .history-action-dot.unpaid { background: var(--text-secondary); }
+    .history-bill-name { flex: 1; font-size: 0.9rem; font-weight: 500; min-width: 80px; }
+    .history-amount { font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+    .history-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 4px; padding: 0.15rem 0.4rem; white-space: nowrap; flex-shrink: 0; }
+    .history-badge.paid { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
+    .history-badge.unpaid { background: #f8fafc; color: var(--text-secondary); border: 1px solid var(--border); }
+    .history-date { font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; margin-left: auto; }
+
     .hidden { display: none; }
     .empty-state { padding: 2rem 1rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem; }
   </style>
@@ -190,6 +203,8 @@
     <div style="display:flex;gap:0.5rem;">
       <button class="header-btn" onclick="show('tracker')">Tracker</button>
       <button class="header-btn" onclick="show('settings')">Template</button>
+      <button class="header-btn" onclick="show('history')">History</button>
+      <button class="header-btn" onclick="exportCSV()">Export</button>
       <button class="header-btn" onclick="show('login')">Login</button>
       <button class="header-btn danger" onclick="showSaveIndicator()">Reset Month</button>
     </div>
@@ -388,6 +403,24 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════
+     HISTORY VIEW
+════════════════════════════════════════════════════════════════ -->
+<div id="view-history" class="hidden">
+  <div class="page">
+    <div class="proto-banner">Payment History — every paid/unpaid toggle is recorded here</div>
+    <div class="card" id="history-card">
+      <div class="card-header">
+        <span class="card-title">March 2026</span>
+        <span id="history-paid-count" style="font-size:0.8rem;color:var(--text-secondary);">0 payments</span>
+      </div>
+      <ul class="bills-list" id="history-list">
+        <li class="empty-state">No payment history yet. Mark bills as paid to start the audit trail.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 <script>
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const REFERENCE_DATE = new Date(2026, 2, 12); // Mar 12, 2026 — fixed so prototype state is consistent
@@ -404,6 +437,7 @@
   ];
   let nextId = 6;
   let editingId = null;
+  let HISTORY = []; // { bill_name, amount, action, time }
 
   const TEMPLATE = BILLS.map(b => ({ ...b }));
 
@@ -474,22 +508,16 @@
         </div>` : ''}`;
 
       // Toggle paid (only if not skipped and not editing)
-      li.querySelector('.bill-check').onclick = (e) => {
-        e.stopPropagation();
+      const toggle = (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
         if (b.skipped || editingId === b.id) return;
         b.paid = !b.paid;
-        renderBills(); recalc();
+        HISTORY.unshift({ bill_name: b.name, amount: b.amount, action: b.paid ? 'paid' : 'unpaid', time: new Date() });
+        renderBills(); renderHistory(); recalc();
       };
-      li.querySelector('.bill-info').onclick = () => {
-        if (b.skipped || editingId === b.id) return;
-        b.paid = !b.paid;
-        renderBills(); recalc();
-      };
-      li.querySelector('.bill-amount').onclick = () => {
-        if (b.skipped || editingId === b.id) return;
-        b.paid = !b.paid;
-        renderBills(); recalc();
-      };
+      li.querySelector('.bill-check').onclick = toggle;
+      li.querySelector('.bill-info').onclick = toggle;
+      li.querySelector('.bill-amount').onclick = toggle;
 
       // Edit button
       li.querySelector('.bill-edit-btn').onclick = (e) => {
@@ -605,6 +633,84 @@
     });
   }
 
+  // ── History rendering ────────────────────────────────────────
+  function renderHistory() {
+    const ul = document.getElementById('history-list');
+    const countEl = document.getElementById('history-paid-count');
+    ul.innerHTML = '';
+    if (HISTORY.length === 0) {
+      ul.innerHTML = '<li class="empty-state">No payment history yet. Mark bills as paid to start the audit trail.</li>';
+      countEl.textContent = '0 payments';
+      return;
+    }
+    const paidCount = HISTORY.filter(h => h.action === 'paid').length;
+    countEl.textContent = `${paidCount} payment${paidCount !== 1 ? 's' : ''}`;
+    HISTORY.forEach((h) => {
+      const li = document.createElement('li');
+      li.className = 'history-item';
+      const timeStr = h.time.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+      li.innerHTML = `
+        <span class="history-action-dot ${h.action}"></span>
+        <span class="history-bill-name">${h.bill_name}</span>
+        <span class="history-amount">${fmt(h.amount)}</span>
+        <span class="history-badge ${h.action}">${h.action === 'paid' ? 'Paid' : 'Unpaid'}</span>
+        <span class="history-date">${timeStr}</span>`;
+      ul.appendChild(li);
+    });
+  }
+
+  // ── CSV Export ───────────────────────────────────────────────
+  function exportCSV() {
+    const bank    = parseFloat(document.getElementById('bank').value) || 0;
+    const checks  = parseFloat(document.getElementById('checks').value) || 0;
+    const pay     = parseFloat(document.getElementById('paycheck').value) || 0;
+    const moveSav = parseFloat(document.getElementById('move-savings').value) || 0;
+    const savBal  = parseFloat(document.getElementById('savings').value) || 0;
+    const income  = checks * pay;
+    const unpaid  = BILLS.filter(b => !b.paid && !b.skipped).reduce((s, b) => s + b.amount, 0);
+    const deposits = 200; // prototype hardcoded deposit total
+    const net     = (bank + income - unpaid + deposits) - moveSav;
+    const totSav  = savBal + moveSav;
+
+    const escape = (v) => {
+      const s = String(v ?? '');
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    const rows = [
+      ['Bills'],
+      ['Name', 'Amount', 'Paid', 'Autopay', 'Due Day', 'Skipped'],
+      ...BILLS.map(b => [b.name, b.amount, b.paid ? 'Yes' : 'No', b.autopay ? 'Yes' : 'No', b.due_day ?? '', b.skipped ? 'Yes' : 'No']),
+      [],
+      ['Deposits'],
+      ['Label', 'Amount'],
+      ['Bonus payment', 500],
+      ['Home repair', -300],
+      [],
+      ['Summary'],
+      ['Field', 'Value'],
+      ['Bank Balance', bank],
+      ['Paychecks Remaining', checks],
+      ['Paycheck Amount', pay],
+      ['Income Remaining', income],
+      ['Unpaid Bill Total', unpaid],
+      ['Deposit Total', deposits],
+      ['Move to Savings', moveSav],
+      ['Savings Balance', savBal],
+      ['Net Remaining', net],
+      ['Total Savings', totSav],
+    ];
+
+    const csv = rows.map(r => r.map(escape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bills-2026-03.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   // ── Login mode toggle ────────────────────────────────────────
   function toggleLoginMode() {
     const passkey = document.getElementById('login-passkey-mode');
@@ -615,7 +721,7 @@
 
   // ── View switching ───────────────────────────────────────────
   function show(view) {
-    ['tracker', 'settings', 'login'].forEach(v => {
+    ['tracker', 'settings', 'history', 'login'].forEach(v => {
       document.getElementById('view-' + v).classList.toggle('hidden', v !== view);
     });
   }
@@ -623,6 +729,7 @@
   // ── Init ────────────────────────────────────────────────────
   renderBills();
   renderTemplate();
+  renderHistory();
   recalc();
 </script>
 

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Tracker from './pages/Tracker';
 import Settings from './pages/Settings';
+import History from './pages/History';
 import api from './api';
 
 export default function App() {
@@ -43,6 +44,10 @@ export default function App() {
         <Route
           path="/settings"
           element={authenticated ? <Settings /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/history"
+          element={authenticated ? <History /> : <Navigate to="/login" replace />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

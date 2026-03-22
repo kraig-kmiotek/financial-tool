@@ -24,7 +24,15 @@ router.patch('/:id/toggle', (req, res) => {
   const bill = db.prepare('SELECT * FROM current_bills WHERE id = ?').get(req.params.id);
   if (!bill) return res.status(404).json({ error: 'Not found' });
   const newPaid = bill.paid ? 0 : 1;
-  db.prepare('UPDATE current_bills SET paid = ? WHERE id = ?').run(newPaid, bill.id);
+  const action = newPaid ? 'paid' : 'unpaid';
+  // YYYY-MM of the current server date
+  const monthKey = new Date().toISOString().slice(0, 7);
+  db.transaction(() => {
+    db.prepare('UPDATE current_bills SET paid = ? WHERE id = ?').run(newPaid, bill.id);
+    db.prepare(
+      'INSERT INTO payment_history (bill_id, bill_name, amount, action, month_key) VALUES (?, ?, ?, ?, ?)'
+    ).run(bill.id, bill.name, bill.amount, action, monthKey);
+  })();
   res.json({ ...bill, paid: newPaid });
 });
 

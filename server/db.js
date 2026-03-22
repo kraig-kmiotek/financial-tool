@@ -90,6 +90,19 @@ function initDb() {
   try { db.exec('ALTER TABLE current_bills ADD COLUMN due_day INTEGER'); } catch {}
   try { db.exec('ALTER TABLE current_bills ADD COLUMN skipped INTEGER NOT NULL DEFAULT 0'); } catch {}
 
+  // Payment history — append-only audit log of every paid/unpaid toggle
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS payment_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bill_id INTEGER,
+      bill_name TEXT NOT NULL,
+      amount REAL NOT NULL DEFAULT 0,
+      action TEXT NOT NULL CHECK (action IN ('paid', 'unpaid')),
+      month_key TEXT NOT NULL,
+      occurred_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
   // Ensure the single summary row exists
   db.prepare('INSERT OR IGNORE INTO summary (id) VALUES (1)').run();
 

@@ -87,6 +87,79 @@ export default function Tracker() {
     window.location.href = '/login';
   };
 
+  const handleExportCSV = () => {
+    const rows = [];
+
+    // Section: Bills
+    rows.push(['Bills']);
+    rows.push(['Name', 'Amount', 'Paid', 'Autopay', 'Due Day', 'Skipped']);
+    bills.forEach((b) => {
+      rows.push([
+        b.name,
+        b.amount,
+        b.paid ? 'Yes' : 'No',
+        b.autopay ? 'Yes' : 'No',
+        b.due_day ?? '',
+        b.skipped ? 'Yes' : 'No',
+      ]);
+    });
+
+    rows.push([]); // blank separator
+
+    // Section: Deposits
+    rows.push(['Deposits']);
+    rows.push(['Label', 'Amount']);
+    if (deposits.length === 0) {
+      rows.push(['(none)', '']);
+    } else {
+      deposits.forEach((d) => rows.push([d.label, d.amount]));
+    }
+
+    rows.push([]);
+
+    // Section: Summary
+    const incomeRemaining = summary.paychecks_remaining * summary.paycheck_amount;
+    const netRemaining =
+      summary.bank_balance + incomeRemaining - unpaidTotal + depositTotal - summary.move_to_savings;
+    const totalSavings = summary.savings_balance + summary.move_to_savings;
+
+    rows.push(['Summary']);
+    rows.push(['Field', 'Value']);
+    rows.push(['Bank Balance', summary.bank_balance]);
+    rows.push(['Paychecks Remaining', summary.paychecks_remaining]);
+    rows.push(['Paycheck Amount', summary.paycheck_amount]);
+    rows.push(['Income Remaining', incomeRemaining]);
+    rows.push(['Unpaid Bill Total', unpaidTotal]);
+    rows.push(['Deposit Total', depositTotal]);
+    rows.push(['Move to Savings', summary.move_to_savings]);
+    rows.push(['Savings Balance', summary.savings_balance]);
+    rows.push(['Net Remaining', netRemaining]);
+    rows.push(['Total Savings', totalSavings]);
+
+    const csvContent = rows
+      .map((row) =>
+        row
+          .map((cell) => {
+            const s = String(cell ?? '');
+            // Quote cells that contain commas, quotes, or newlines
+            return s.includes(',') || s.includes('"') || s.includes('\n')
+              ? `"${s.replace(/"/g, '""')}"`
+              : s;
+          })
+          .join(',')
+      )
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+    a.href = url;
+    a.download = `bills-${month}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const unpaidTotal = bills
     .filter((b) => !b.paid && !b.skipped)
     .reduce((sum, b) => sum + b.amount, 0);
@@ -108,6 +181,12 @@ export default function Tracker() {
         <div className="header-actions">
           <button className="header-btn" onClick={() => navigate('/settings')}>
             Template
+          </button>
+          <button className="header-btn" onClick={() => navigate('/history')}>
+            History
+          </button>
+          <button className="header-btn" onClick={handleExportCSV}>
+            Export
           </button>
           <button
             className="header-btn danger"
