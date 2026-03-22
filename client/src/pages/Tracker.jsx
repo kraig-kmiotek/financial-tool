@@ -95,36 +95,37 @@ export default function Tracker() {
       <AppHeader />
 
       <div className="page">
-        <SummaryPanel
-          summary={summary}
-          onChange={setSummary}
-          unpaidTotal={unpaidTotal}
-          depositTotal={depositTotal}
-        />
-
-        {/* Center column: bills + one-off items (stacked on mobile, grid col on desktop) */}
-        <div className="page-center">
-          <BillList
-            bills={sortedBills}
-            onToggle={handleToggle}
-            onUpdate={handleUpdate}
-            onDelete={handleDeleteBill}
-            onAdd={handleAddBill}
+        {/* Left column: summary + insights (stacked on mobile, grid col on desktop) */}
+        <div className="page-left">
+          <SummaryPanel
+            summary={summary}
+            onChange={setSummary}
+            unpaidTotal={unpaidTotal}
+            depositTotal={depositTotal}
           />
-          <DepositsPanel
+          <ChartsPanel
+            bills={bills}
+            summary={summary}
             deposits={deposits}
-            onAdd={(d) => setDeposits((prev) => [...prev, d])}
-            onDelete={(id) => setDeposits((prev) => prev.filter((d) => d.id !== id))}
+            unpaidTotal={unpaidTotal}
+            depositTotal={depositTotal}
           />
         </div>
 
-        {/* Right column: charts — hidden on mobile, shown on desktop */}
-        <ChartsPanel
-          bills={bills}
-          summary={summary}
+        {/* Center column: bills */}
+        <BillList
+          bills={sortedBills}
+          onToggle={handleToggle}
+          onUpdate={handleUpdate}
+          onDelete={handleDeleteBill}
+          onAdd={handleAddBill}
+        />
+
+        {/* Right column: one-off items */}
+        <DepositsPanel
           deposits={deposits}
-          unpaidTotal={unpaidTotal}
-          depositTotal={depositTotal}
+          onAdd={(d) => setDeposits((prev) => [...prev, d])}
+          onDelete={(id) => setDeposits((prev) => prev.filter((d) => d.id !== id))}
         />
       </div>
     </div>

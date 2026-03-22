@@ -115,12 +115,12 @@
     .bills-footer-amount { font-size: 1rem; font-weight: 700; color: var(--danger); }
 
     /* ── Deposits ── */
-    .deposit-item { display: flex; align-items: center; padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); gap: 0.75rem; }
-    .deposit-label { flex: 1; font-size: 0.9rem; }
-    .deposit-amount { font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+    .deposit-item { display: flex; flex-direction: column; align-items: center; padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); gap: 0.2rem; position: relative; }
+    .deposit-label { width: 100%; font-size: 0.9rem; word-break: break-word; padding-right: 1.5rem; }
+    .deposit-amount { font-size: 0.9rem; font-weight: 600; text-align: center; width: 100%; }
     .deposit-amount.positive { color: var(--success); }
     .deposit-amount.negative { color: var(--danger); }
-    .deposit-delete { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; }
+    .deposit-delete { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; }
     .deposit-delete:hover { color: var(--danger); background: #fef2f2; }
     .deposit-add-form { padding: 0.75rem 1rem; display: flex; gap: 0.5rem; border-top: 1px solid var(--border); background: #f8fafc; }
     .deposit-add-form input { flex: 1; min-width: 0; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 7px; font-size: 0.875rem; outline: none; background: #fff; }
@@ -195,13 +195,13 @@
 
     /* ── Desktop 3-column layout ── */
     .page { max-width: 600px; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
-    .page-center { display: contents; }
+    .page-left { display: contents; }
     .charts-panel { display: none; }
 
     @media (min-width: 960px) {
       .app-header-inner { max-width: 1380px !important; }
       #view-tracker .page { max-width: 1380px; display: grid; grid-template-columns: 300px 1fr 280px; align-items: start; }
-      .page-center { display: flex; flex-direction: column; gap: 1rem; }
+      .page-left { display: flex; flex-direction: column; gap: 1rem; }
       .charts-panel { display: block !important; }
       .header-divider { display: block !important; }
     }
@@ -257,112 +257,109 @@
       Prototype — click bills to toggle paid · hover a bill and click ✏ to edit · numbers are editable
     </div>
 
-    <!-- Left column: Financial Summary -->
+    <!-- Left column: Financial Summary + Insights -->
+    <div class="page-left">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Financial Summary</span>
+          <span class="save-indicator saved hidden" id="save-indicator">Saved ✓</span>
+        </div>
+        <div class="summary-net">
+          <span class="net-label">Net Remaining</span>
+          <span class="net-value positive" id="net-display">$1,243.50</span>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-field">
+            <span class="summary-label">Bank Balance</span>
+            <input class="summary-input" type="number" value="4200" step="0.01" oninput="recalc();showSaveIndicator()" id="bank" />
+          </div>
+          <div class="summary-field">
+            <span class="summary-label">Paychecks Remaining</span>
+            <input class="summary-input" type="number" value="1" step="1" min="0" oninput="recalc();showSaveIndicator()" id="checks" />
+          </div>
+          <div class="summary-field">
+            <span class="summary-label">Paycheck Amount</span>
+            <input class="summary-input" type="number" value="3500" step="0.01" oninput="recalc();showSaveIndicator()" id="paycheck" />
+          </div>
+          <div class="summary-field">
+            <span class="summary-label">Income Remaining</span>
+            <span class="summary-value positive" id="income-display">$3,200.00</span>
+          </div>
+          <div class="summary-field">
+            <span class="summary-label">Move to Savings</span>
+            <input class="summary-input" type="number" value="300" step="0.01" oninput="recalc();showSaveIndicator()" id="move-savings" />
+          </div>
+          <div class="summary-field">
+            <span class="summary-label">Savings Balance</span>
+            <input class="summary-input" type="number" value="8500" step="0.01" oninput="recalc();showSaveIndicator()" id="savings" />
+          </div>
+          <div class="summary-field">
+            <span class="summary-label">Total Savings</span>
+            <span class="summary-value positive" id="total-savings-display">$12,900.00</span>
+          </div>
+          <div class="summary-field">
+            <span class="summary-label">Unpaid Bills</span>
+            <span class="summary-value negative" id="unpaid-display">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insights charts (desktop only) -->
+      <div class="card charts-panel">
+        <div class="card-header">
+          <span class="card-title">Insights</span>
+        </div>
+        <div class="chart-section">
+          <div class="chart-section-label">Bills Progress</div>
+          <div class="donut-wrap">
+            <svg id="donut-svg" width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" stroke-width="13"/>
+            </svg>
+            <div class="chart-legend" id="donut-legend"></div>
+          </div>
+        </div>
+        <div class="chart-section chart-section--bordered">
+          <div class="chart-section-label">Budget Breakdown</div>
+          <div class="budget-bar-track" id="budget-bar"></div>
+          <div class="chart-legend" id="budget-legend" style="margin-top:0.6rem"></div>
+        </div>
+        <div class="chart-section chart-section--bordered">
+          <div class="chart-section-label">Top Bills</div>
+          <div class="bill-bars" id="bill-bars-chart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center column: Bills -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Financial Summary</span>
-        <span class="save-indicator saved hidden" id="save-indicator">Saved ✓</span>
+        <span class="card-title">Bills</span>
+        <span id="paid-count" style="font-size:0.8rem;color:var(--text-secondary);">0/0 paid</span>
       </div>
-      <div class="summary-net">
-        <span class="net-label">Net Remaining</span>
-        <span class="net-value positive" id="net-display">$1,243.50</span>
-      </div>
-      <div class="summary-grid">
-        <div class="summary-field">
-          <span class="summary-label">Bank Balance</span>
-          <input class="summary-input" type="number" value="4200" step="0.01" oninput="recalc();showSaveIndicator()" id="bank" />
-        </div>
-        <div class="summary-field">
-          <span class="summary-label">Paychecks Remaining</span>
-          <input class="summary-input" type="number" value="1" step="1" min="0" oninput="recalc();showSaveIndicator()" id="checks" />
-        </div>
-        <div class="summary-field">
-          <span class="summary-label">Paycheck Amount</span>
-          <input class="summary-input" type="number" value="3500" step="0.01" oninput="recalc();showSaveIndicator()" id="paycheck" />
-        </div>
-        <div class="summary-field">
-          <span class="summary-label">Income Remaining</span>
-          <span class="summary-value positive" id="income-display">$3,200.00</span>
-        </div>
-        <div class="summary-field">
-          <span class="summary-label">Move to Savings</span>
-          <input class="summary-input" type="number" value="300" step="0.01" oninput="recalc();showSaveIndicator()" id="move-savings" />
-        </div>
-        <div class="summary-field">
-          <span class="summary-label">Savings Balance</span>
-          <input class="summary-input" type="number" value="8500" step="0.01" oninput="recalc();showSaveIndicator()" id="savings" />
-        </div>
-        <div class="summary-field">
-          <span class="summary-label">Total Savings</span>
-          <span class="summary-value positive" id="total-savings-display">$12,900.00</span>
-        </div>
-        <div class="summary-field">
-          <span class="summary-label">Unpaid Bills</span>
-          <span class="summary-value negative" id="unpaid-display">$0.00</span>
-        </div>
+      <ul class="bills-list" id="bill-list"></ul>
+      <form class="bill-add-form" onsubmit="addBill(event)">
+        <input class="name" placeholder="Add a bill this month…" id="new-bill-name" />
+        <input class="amount" type="number" step="0.01" placeholder="Amount" id="new-bill-amount" />
+        <button type="submit" class="btn btn-secondary btn-sm">Add</button>
+      </form>
+      <div class="bills-footer">
+        <span class="bills-footer-label">Unpaid Total</span>
+        <span class="bills-footer-amount" id="footer-unpaid">$0.00</span>
       </div>
     </div>
 
-    <!-- Center column: Bills + One-Off Items -->
-    <div class="page-center">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Bills</span>
-          <span id="paid-count" style="font-size:0.8rem;color:var(--text-secondary);">0/0 paid</span>
-        </div>
-        <ul class="bills-list" id="bill-list"></ul>
-        <form class="bill-add-form" onsubmit="addBill(event)">
-          <input class="name" placeholder="Add a bill this month…" id="new-bill-name" />
-          <input class="amount" type="number" step="0.01" placeholder="Amount" id="new-bill-amount" />
-          <button type="submit" class="btn btn-secondary btn-sm">Add</button>
-        </form>
-        <div class="bills-footer">
-          <span class="bills-footer-label">Unpaid Total</span>
-          <span class="bills-footer-amount" id="footer-unpaid">$0.00</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">One-Off Items</span>
-          <span id="deposit-total-display" style="font-size:0.875rem;font-weight:700;color:var(--success);">+$200.00</span>
-        </div>
-        <ul style="list-style:none" id="deposit-list"></ul>
-        <form class="deposit-add-form" onsubmit="addDeposit(event)">
-          <input placeholder="Description" id="new-deposit-label" />
-          <input class="amount" type="number" placeholder="Amount" step="0.01" id="new-deposit-amount" />
-          <button type="submit" class="btn btn-primary btn-sm">Add</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Right column: Insights charts (desktop only) -->
-    <div class="card charts-panel">
+    <!-- Right column: One-Off Items -->
+    <div class="card">
       <div class="card-header">
-        <span class="card-title">Insights</span>
+        <span class="card-title">One-Off Items</span>
+        <span id="deposit-total-display" style="font-size:0.875rem;font-weight:700;color:var(--success);">+$200.00</span>
       </div>
-
-      <div class="chart-section">
-        <div class="chart-section-label">Bills Progress</div>
-        <div class="donut-wrap">
-          <svg id="donut-svg" width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0">
-            <circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" stroke-width="13"/>
-            <!-- arcs rendered by renderCharts() -->
-          </svg>
-          <div class="chart-legend" id="donut-legend"></div>
-        </div>
-      </div>
-
-      <div class="chart-section chart-section--bordered">
-        <div class="chart-section-label">Budget Breakdown</div>
-        <div class="budget-bar-track" id="budget-bar"></div>
-        <div class="chart-legend" id="budget-legend" style="margin-top:0.6rem"></div>
-      </div>
-
-      <div class="chart-section chart-section--bordered">
-        <div class="chart-section-label">Top Bills</div>
-        <div class="bill-bars" id="bill-bars-chart"></div>
-      </div>
+      <ul style="list-style:none" id="deposit-list"></ul>
+      <form class="deposit-add-form" onsubmit="addDeposit(event)">
+        <input placeholder="Description" id="new-deposit-label" />
+        <input class="amount" type="number" placeholder="Amount" step="0.01" id="new-deposit-amount" />
+        <button type="submit" class="btn btn-primary btn-sm">Add</button>
+      </form>
     </div>
 
   </div>
