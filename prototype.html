@@ -200,8 +200,8 @@
 
     @media (min-width: 960px) {
       .app-header-inner { max-width: 1380px !important; }
-      #view-tracker .page { max-width: 1380px; display: grid; grid-template-columns: 250px 250px 1fr 500px; align-items: start; }
-      .page-left { display: contents; }
+      #view-tracker .page { max-width: 1600px; display: grid; grid-template-columns: 580px 1fr 280px; align-items: start; }
+      .page-left { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
       .charts-panel { display: block !important; }
       .header-divider { display: block !important; }
     }
@@ -257,7 +257,8 @@
       Prototype — click bills to toggle paid · hover a bill and click ✏ to edit · numbers are editable
     </div>
 
-    <!-- Col 1: Financial Summary -->
+    <!-- Col 1: Summary + Insights side by side -->
+    <div class="page-left">
     <div class="card">
       <div class="card-header">
         <span class="card-title">Financial Summary</span>
@@ -303,7 +304,7 @@
         </div>
       </div>
 
-    <!-- Col 2: Insights (desktop only) -->
+    <!-- Insights (desktop only, inside page-left) -->
     <div class="card charts-panel">
       <div class="card-header">
         <span class="card-title">Insights</span>
@@ -327,8 +328,9 @@
         <div class="bill-bars" id="bill-bars-chart"></div>
       </div>
     </div>
+    </div><!-- end page-left -->
 
-    <!-- Col 3: Bills -->
+    <!-- Col 2: Bills -->
     <div class="card">
       <div class="card-header">
         <span class="card-title">Bills</span>
@@ -346,7 +348,7 @@
       </div>
     </div>
 
-    <!-- Col 4: One-Off Items (wider) -->
+    <!-- Col 3: One-Off Items -->
     <div class="card">
       <div class="card-header">
         <span class="card-title">One-Off Items</span>
