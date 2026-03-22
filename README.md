@@ -2,6 +2,10 @@
 
 A personal bill tracking web app built to replace a monthly Excel workflow. Track bills, log payments, manage one-off deposits, and monitor your financial position — all in one place.
 
+## Try the Prototype
+
+Want to see it before deploying? [`prototype.html`](prototype.html) is a fully interactive, zero-dependency mock of the app — no server or install required. Download the file and open it in any browser to explore the UI and features.
+
 ## Features
 
 - **Bill tracking** — Mark bills paid/unpaid with a single click. Bills sort by due date automatically, and paid bills move to the bottom.
