@@ -51,6 +51,7 @@ router.post('/register/options', async (req, res) => {
   });
 
   req.session.regChallenge = options.challenge;
+  console.log('register/options - session ID:', req.session.id, '- challenge set:', !!options.challenge);
   res.json(options);
 });
 
