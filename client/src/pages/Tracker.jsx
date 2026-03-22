@@ -4,6 +4,7 @@ import api from '../api';
 import BillList from '../components/BillList';
 import SummaryPanel from '../components/SummaryPanel';
 import DepositsPanel from '../components/DepositsPanel';
+import ChartsPanel from '../components/ChartsPanel';
 
 const DEFAULT_SUMMARY = {
   bank_balance: 0,
@@ -175,16 +176,22 @@ export default function Tracker() {
   }
 
   return (
-    <>
+    <div className="tracker-page">
       <header className="app-header">
         <h1>Bill Tracker</h1>
         <div className="header-actions">
+          {/* Navigation — get to other screens */}
           <button className="header-btn" onClick={() => navigate('/settings')}>
             Template
           </button>
           <button className="header-btn" onClick={() => navigate('/history')}>
             History
           </button>
+
+          {/* Visual separator between nav and action buttons (desktop only) */}
+          <span className="header-divider" aria-hidden="true" />
+
+          {/* Actions */}
           <button className="header-btn" onClick={handleExportCSV}>
             Export
           </button>
@@ -208,19 +215,32 @@ export default function Tracker() {
           unpaidTotal={unpaidTotal}
           depositTotal={depositTotal}
         />
-        <BillList
+
+        {/* Center column: bills + one-off items (stacked on mobile, grid col on desktop) */}
+        <div className="page-center">
+          <BillList
+            bills={bills}
+            onToggle={handleToggle}
+            onUpdate={handleUpdate}
+            onDelete={handleDeleteBill}
+            onAdd={handleAddBill}
+          />
+          <DepositsPanel
+            deposits={deposits}
+            onAdd={(d) => setDeposits((prev) => [...prev, d])}
+            onDelete={(id) => setDeposits((prev) => prev.filter((d) => d.id !== id))}
+          />
+        </div>
+
+        {/* Right column: charts — hidden on mobile, shown on desktop */}
+        <ChartsPanel
           bills={bills}
-          onToggle={handleToggle}
-          onUpdate={handleUpdate}
-          onDelete={handleDeleteBill}
-          onAdd={handleAddBill}
-        />
-        <DepositsPanel
+          summary={summary}
           deposits={deposits}
-          onAdd={(d) => setDeposits((prev) => [...prev, d])}
-          onDelete={(id) => setDeposits((prev) => prev.filter((d) => d.id !== id))}
+          unpaidTotal={unpaidTotal}
+          depositTotal={depositTotal}
         />
       </div>
-    </>
+    </div>
   );
 }

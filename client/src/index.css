@@ -284,6 +284,19 @@ body {
 .header-btn.danger { background: rgba(220,38,38,0.75); }
 .header-btn.danger:hover { background: rgba(220,38,38,0.9); }
 
+/* Separator between nav and action button groups (desktop only) */
+.header-divider {
+  display: none;
+  width: 1px;
+  background: rgba(255,255,255,0.25);
+  align-self: stretch;
+  margin: 0 0.25rem;
+}
+
+@media (min-width: 960px) {
+  .header-divider { display: block; }
+}
+
 /* ── Page ───────────────────────────────────────────────────── */
 .page {
   max-width: 600px;
@@ -292,6 +305,39 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* ── Desktop 3-column layout (Tracker only) ─────────────────── */
+@media (min-width: 960px) {
+  .tracker-page .page {
+    max-width: 1380px;
+    display: grid;
+    grid-template-columns: 300px 1fr 280px;
+    align-items: start;
+  }
+
+  /* Center column wraps bills + deposits as a stacked pair */
+  .page-center {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Show the charts panel only on desktop */
+  .charts-panel {
+    display: block !important;
+  }
+}
+
+/* On mobile, page-center is transparent to layout — children
+   flow as direct siblings in the flex column */
+.page-center {
+  display: contents;
+}
+
+/* Charts panel hidden on mobile */
+.charts-panel {
+  display: none;
 }
 
 /* ── Card ───────────────────────────────────────────────────── */
@@ -1027,4 +1073,114 @@ body {
   .net-value { font-size: 1.5rem; }
   .deposit-add-form { gap: 0.4rem; }
   .deposit-amount-input { max-width: 90px; }
+}
+
+/* ── Charts Panel ───────────────────────────────────────────── */
+.chart-section {
+  padding: 0.875rem 1rem;
+}
+
+.chart-section--bordered {
+  border-top: 1px solid var(--border);
+}
+
+.chart-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.chart-empty {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+/* Donut chart */
+.donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.chart-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Budget breakdown bar */
+.budget-bar-track {
+  height: 16px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+}
+
+.budget-bar-seg {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+/* Top bills bar chart */
+.bill-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.bill-bar-row {
+  display: grid;
+  grid-template-columns: 85px 1fr 44px;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bill-bar-name {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bill-bar-track {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bill-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.bill-bar-value {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: nowrap;
 }

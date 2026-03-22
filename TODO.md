@@ -1,8 +1,9 @@
 # TODO
 
 ## Desktop / Responsive Layout
-- [ ] App feels too condensed on desktop — design a proper desktop layout that doesn't feel like a mobile app (wider content area, multi-column layout, better use of whitespace)
-- [ ] Login button is in the wrong place — move to a more natural position
+- [x] App feels too condensed on desktop — design a proper desktop layout that doesn't feel like a mobile app (wider content area, multi-column layout, better use of whitespace)
+- [x] Login/Logout button in the wrong place — reorganized header buttons into nav group (Template, History) and action group (Export, Reset Month, Logout) with a visual separator
+- [x] Add charts/insights panel on the right column (desktop only): bills progress donut, budget breakdown bar, top bills horizontal bars
 
 ## Deployment Checklist
 - [ ] Set `RP_ID` and `RP_ORIGIN` env vars on Railway for WebAuthn to work in production
