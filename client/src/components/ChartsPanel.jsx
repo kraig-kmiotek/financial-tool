@@ -171,8 +171,7 @@ function BillsBars({ bills }) {
               className="bill-bar-fill"
               style={{
                 width: `${(bill.amount / max) * 100}%`,
-                background: bill.paid ? '#15803d' : '#1e40af',
-                opacity: bill.paid ? 0.65 : 1,
+                background: '#1e40af',
               }}
             />
           </div>

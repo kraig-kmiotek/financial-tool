@@ -809,7 +809,7 @@
       <div class="bill-bar-row">
         <div class="bill-bar-name" title="${bill.name}">${bill.name}</div>
         <div class="bill-bar-track">
-          <div class="bill-bar-fill" style="width:${(bill.amount/maxAmt)*100}%;background:${bill.paid?'#15803d':'#1e40af'};opacity:${bill.paid?0.65:1}"></div>
+          <div class="bill-bar-fill" style="width:${(bill.amount/maxAmt)*100}%;background:#1e40af"></div>
         </div>
         <div class="bill-bar-value">${fmtK(bill.amount)}</div>
       </div>`).join('');
