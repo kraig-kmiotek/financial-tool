@@ -249,11 +249,17 @@ body {
   z-index: 100;
   background: var(--primary);
   color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+/* Inner wrapper constrains content to the same max-width as the page columns */
+.app-header-inner {
+  max-width: 1380px;
+  margin: 0 auto;
   padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: var(--shadow-md);
 }
 
 .app-header h1 {

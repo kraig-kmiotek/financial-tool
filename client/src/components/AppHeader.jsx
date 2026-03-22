@@ -14,14 +14,16 @@ export default function AppHeader({ children }) {
 
   return (
     <header className="app-header">
-      <h1>Bill Tracker</h1>
-      <div className="header-actions">
-        <button className="header-btn" onClick={() => navigate('/')}>Tracker</button>
-        <button className="header-btn" onClick={() => navigate('/settings')}>Template</button>
-        <button className="header-btn" onClick={() => navigate('/history')}>History</button>
-        <span className="header-divider" aria-hidden="true" />
-        {children}
-        <button className="header-btn" onClick={handleLogout}>Logout</button>
+      <div className="app-header-inner">
+        <h1>Bill Tracker</h1>
+        <div className="header-actions">
+          <button className="header-btn" onClick={() => navigate('/')}>Tracker</button>
+          <button className="header-btn" onClick={() => navigate('/settings')}>Template</button>
+          <button className="header-btn" onClick={() => navigate('/history')}>History</button>
+          <span className="header-divider" aria-hidden="true" />
+          {children}
+          <button className="header-btn" onClick={handleLogout}>Logout</button>
+        </div>
       </div>
     </header>
   );
