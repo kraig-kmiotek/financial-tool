@@ -100,6 +100,7 @@ function EditRow({ bill, onSave, onCancel }) {
   return (
     <form className="template-edit-row" onSubmit={save}>
       <input
+        type="text"
         className="template-edit-name"
         value={name}
         onChange={(e) => setName(e.target.value)}
