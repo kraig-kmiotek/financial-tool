@@ -64,13 +64,7 @@ export default function History() {
 
   return (
     <div className="settings-page">
-      <AppHeader>
-        {rows.length > 0 && (
-          <button className="header-btn danger" onClick={handleClear}>
-            Clear History
-          </button>
-        )}
-      </AppHeader>
+      <AppHeader />
 
       <div className="page">
         {monthKeys.length === 0 ? (
@@ -80,12 +74,19 @@ export default function History() {
             </div>
           </div>
         ) : (
-          monthKeys.map((mk) => (
+          monthKeys.map((mk, i) => (
             <div key={mk} className="card">
               <div className="card-header">
                 <span className="card-title">{fmtMonth(mk)}</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                  {grouped[mk].filter((r) => r.action === 'paid').length} payments
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    {grouped[mk].filter((r) => r.action === 'paid').length} payments
+                  </span>
+                  {i === 0 && (
+                    <button className="btn btn-danger btn-sm" onClick={handleClear}>
+                      Clear History
+                    </button>
+                  )}
                 </span>
               </div>
               <ul className="bills-list">
