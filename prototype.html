@@ -200,8 +200,8 @@
 
     @media (min-width: 960px) {
       .app-header-inner { max-width: 1380px !important; }
-      #view-tracker .page { max-width: 1380px; display: grid; grid-template-columns: 300px 1fr 280px; align-items: start; }
-      .page-left { display: flex; flex-direction: column; gap: 1rem; }
+      #view-tracker .page { max-width: 1380px; display: grid; grid-template-columns: 250px 250px 1fr 500px; align-items: start; }
+      .page-left { display: contents; }
       .charts-panel { display: block !important; }
       .header-divider { display: block !important; }
     }
@@ -257,11 +257,10 @@
       Prototype — click bills to toggle paid · hover a bill and click ✏ to edit · numbers are editable
     </div>
 
-    <!-- Left column: Financial Summary + Insights -->
-    <div class="page-left">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Financial Summary</span>
+    <!-- Col 1: Financial Summary -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Financial Summary</span>
           <span class="save-indicator saved hidden" id="save-indicator">Saved ✓</span>
         </div>
         <div class="summary-net">
@@ -304,33 +303,32 @@
         </div>
       </div>
 
-      <!-- Insights charts (desktop only) -->
-      <div class="card charts-panel">
-        <div class="card-header">
-          <span class="card-title">Insights</span>
+    <!-- Col 2: Insights (desktop only) -->
+    <div class="card charts-panel">
+      <div class="card-header">
+        <span class="card-title">Insights</span>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-label">Bills Progress</div>
+        <div class="donut-wrap">
+          <svg id="donut-svg" width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0">
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" stroke-width="13"/>
+          </svg>
+          <div class="chart-legend" id="donut-legend"></div>
         </div>
-        <div class="chart-section">
-          <div class="chart-section-label">Bills Progress</div>
-          <div class="donut-wrap">
-            <svg id="donut-svg" width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0">
-              <circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" stroke-width="13"/>
-            </svg>
-            <div class="chart-legend" id="donut-legend"></div>
-          </div>
-        </div>
-        <div class="chart-section chart-section--bordered">
-          <div class="chart-section-label">Budget Breakdown</div>
-          <div class="budget-bar-track" id="budget-bar"></div>
-          <div class="chart-legend" id="budget-legend" style="margin-top:0.6rem"></div>
-        </div>
-        <div class="chart-section chart-section--bordered">
-          <div class="chart-section-label">Top Bills</div>
-          <div class="bill-bars" id="bill-bars-chart"></div>
-        </div>
+      </div>
+      <div class="chart-section chart-section--bordered">
+        <div class="chart-section-label">Budget Breakdown</div>
+        <div class="budget-bar-track" id="budget-bar"></div>
+        <div class="chart-legend" id="budget-legend" style="margin-top:0.6rem"></div>
+      </div>
+      <div class="chart-section chart-section--bordered">
+        <div class="chart-section-label">Top Bills</div>
+        <div class="bill-bars" id="bill-bars-chart"></div>
       </div>
     </div>
 
-    <!-- Center column: Bills -->
+    <!-- Col 3: Bills -->
     <div class="card">
       <div class="card-header">
         <span class="card-title">Bills</span>
@@ -348,7 +346,7 @@
       </div>
     </div>
 
-    <!-- Right column: One-Off Items -->
+    <!-- Col 4: One-Off Items (wider) -->
     <div class="card">
       <div class="card-header">
         <span class="card-title">One-Off Items</span>
