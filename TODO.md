@@ -4,6 +4,7 @@
 - [x] App feels too condensed on desktop — design a proper desktop layout that doesn't feel like a mobile app (wider content area, multi-column layout, better use of whitespace)
 - [x] Login/Logout button in the wrong place — reorganized header buttons into nav group (Template, History) and action group (Export, Reset Month, Logout) with a visual separator
 - [x] Add charts/insights panel on the right column (desktop only): bills progress donut, budget breakdown bar, top bills horizontal bars
+- [ ] Fix mobile layout - not all header buttons are visible and one button falls off the header bar
 
 ## Deployment Checklist
 - [x] Pin Node version in `engines` field (>=24.0.0) and upgrade `better-sqlite3` to v12 (prebuilt binaries for Node 24)
@@ -16,8 +17,8 @@
 - [x] Add empty state message to deposits panel when no deposits exist
 - [x] Improve silent error handling in catch blocks (e.g. deposits) — show user-facing feedback
 - [x] Add React error boundary so a JS crash doesn't show a white screen
+- [ ] Fix "Reset Month" resetting "One-Off Items" - these items should only be removed manually
 
 ## Future Features
 - [x] Bill payment history / audit trail
 - [x] CSV / JSON export
-- [ ] Recurring deposits (not just one-off)
